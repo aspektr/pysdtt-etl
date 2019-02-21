@@ -1,35 +1,94 @@
 source_name:
-  source_mssql_db:
+  quiz_db:
     type: mssql+pymssql
     host: localhost
     port: 1435
     dbname: lkdb01
-    user: user
-    psw: 654321
+    user: quiz
+    psw: 123asDF!@#
     file: query/application_history.sql
     date_column: [time_status, prev_time_status, next_time_status, application_created_at, application_updated_at]
-  source_postgresql_db:
-    type: postgresql+psycopg2
+  test_source:
+    type: mssql+pymssql
     host: localhost
+    port: 1435
+    dbname: lkdb01
+    user: quiz
+    psw: 123asDF!@#
+    file: query/test2.sql
+  test_source2:
+    type: postgresql+psycopg2
+    host: 172.18.151.27
     port: 5432
     dbname: superset
     schema: upload
     user: superset
-    psw: 123456
+    psw: DEkde3467XDer4G
     file: query/test.sql
-    cursor_size: 1000
 
 sink_name:
   application_history:
     type: postgresql+psycopg2
-    host: localhost
+    host: 172.18.151.27
     port: 5432
     dbname: superset
     schema: upload
     user: superset
-    psw: 123456
+    psw: DEkde3467XDer4G
     if_exists: replace
     table: application_history
+    method: multi
+    dtypes:
+      id_application: integer
+      time_status: timestamp
+      name: varchar(128)
+      reason: varchar(128)
+      description: text
+      prev_name: varchar(128)
+      prev_reason: varchar(128)
+      prev_description: text
+      prev_time_status: timestamp
+      next_name: varchar(128)
+      next_reason: varchar(128)
+      next_description: text
+      next_time_status: timestamp
+      processing_stage_in_minutes: int4
+      sla: varchar(64)
+      processing_application_in_hours: int4
+      id_form: int4
+      last_status: varchar(128)
+      last_description: varchar(128)
+      application_created_at: timestamp
+      application_updated_at: timestamp
+      title: text
+      regno: text
+      phone: text
+      okopf_name: text
+      location_adress_region_name: text
+      location_adress_city_name: text
+      location_adress_city_type: text
+      registration_address_region_name: text
+      registration_adress_region_type: text
+      registration_adress_city_name: text
+      registration_adress_city_type: text
+      city_name: text
+      activity_classifier_0_name: text
+      service_set: varchar(128)
+      branch_name: text
+      office_name: text
+      bank_service_0_name: text
+      bank_service_1_name: text
+      staff_number: int4
+  temp_table:
+    type: postgresql+psycopg2
+    host: 172.18.151.27
+    port: 5432
+    dbname: superset
+    schema: upload
+    user: superset
+    psw: DEkde3467XDer4G
+    if_exists: replace
+    table: temp_table
     method: multi
     dtypes:
       id_application: integer
@@ -72,3 +131,20 @@ sink_name:
       bank_service_0_name: text
       bank_service_1_name: text
       staff_number: int4
+  test_sink:
+    type: postgresql+psycopg2
+    host: 172.18.151.27
+    port: 5432
+    dbname: superset
+    schema: upload
+    user: superset
+    psw: DEkde3467XDer4G
+    if_exists: replace
+    table: temp
+    method: multi
+    dtypes:
+      location_adress_region_name: int4
+
+
+
+

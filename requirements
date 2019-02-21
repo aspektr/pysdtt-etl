@@ -1,0 +1,6 @@
+pandas==0.24.1
+sqlalchemy
+yaml
+psycopg2
+argparse
+pymssql

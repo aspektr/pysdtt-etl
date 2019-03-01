@@ -1,21 +1,11 @@
-import logs
-from config import Config
 from sqlalchemy import create_engine
 from pandas import read_sql
+from prototype import Prototype
 
 
-class Source:
+class Source(Prototype):
     def __init__(self, source_name):
-        self.source_name = source_name
-
-        # prepare logger
-        logs.setup()
-        self.logger = logs.logging.getLogger(__name__)
-
-        # Read config
-        self.config = Config({'source_name': source_name}).load()
-        self.logger.info("Config for %s source is loaded" % self.source_name)
-        self.logger.debug("%s config is %s" % (self.source_name, self.config))
+        Prototype.__init__(self, source_name, kind='source')
 
         # Read file containing sql query
         with open(self.config['file'], 'r', encoding='utf8') as sqlfile:

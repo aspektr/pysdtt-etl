@@ -1,11 +1,10 @@
-import logs
-from config import Config
 from sqlalchemy import create_engine
 from sqlalchemy.dialects.postgresql import \
     ARRAY, BIGINT, BIT, BOOLEAN, BYTEA, CHAR, CIDR, DATE, \
     DOUBLE_PRECISION, ENUM, FLOAT, HSTORE, INET, INTEGER, \
     INTERVAL, JSON, JSONB, MACADDR, MONEY, NUMERIC, OID, REAL, SMALLINT, TEXT, \
     TIME, TIMESTAMP, UUID, VARCHAR
+from prototype import Prototype
 
 
 db_dtypes = {
@@ -42,18 +41,9 @@ db_dtypes = {
 }
 
 
-class Sink:
+class Sink(Prototype):
     def __init__(self, sink_name):
-        self.sink_name = sink_name
-
-        # Prepare logger
-        logs.setup()
-        self.logger = logs.logging.getLogger(__name__)
-
-        # Read config
-        self.config = Config({'sink_name': self.sink_name}).load()
-        self.logger.info("Config for %s sink is loaded" % self.sink_name)
-        self.logger.debug("%s config is %s" % (self.sink_name, self.config))
+        Prototype.__init__(self, sink_name, kind='sink')
 
     def engine(self):
         self.logger.info("Ready to ingest data into %s:%s/%s" %

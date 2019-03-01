@@ -1,23 +1,13 @@
-import logs
-from config import Config
 import psycopg2
 import psycopg2.errorcodes
 import os
 import time
+from prototype import Prototype
 
 
-class Injector:
+class Injector(Prototype):
     def __init__(self, sink_name):
-        self.sink_name = sink_name
-
-        # Prepare logger
-        logs.setup()
-        self.logger = logs.logging.getLogger(__name__)
-
-        # Read config
-        self.config = Config({'sink_name': self.sink_name}).load()
-        self.logger.info("[%u] Config for %s sink is loaded" % (os.getpid(), self.sink_name))
-        self.logger.debug("%s config is %s" % (self.sink_name, self.config))
+        Prototype.__init__(self, sink_name, kind='sink')
 
         self.prepare_statement = self.create_prepare_statement()
         self.insert_statement = self.create_insert_statement()
@@ -180,7 +170,6 @@ class Injector:
                 os.getpid(), num_rows+1, took_local, num_rows/took_local))            
 
 
-
             start_local_time = time.time()
             self.connection.commit()
             took_local = time.time() - start_local_time
@@ -198,7 +187,3 @@ class Injector:
         took = time.time() - start_time
         self.logger.info("[%u] loaded %d rows in %f seconds, %f rows/sec" % (
                 os.getpid(), num_rows+1, took, num_rows/took))
-
-
-
-

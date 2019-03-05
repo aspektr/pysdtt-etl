@@ -4,7 +4,7 @@ from sqlalchemy.dialects.postgresql import \
     DOUBLE_PRECISION, ENUM, FLOAT, HSTORE, INET, INTEGER, \
     INTERVAL, JSON, JSONB, MACADDR, MONEY, NUMERIC, OID, REAL, SMALLINT, TEXT, \
     TIME, TIMESTAMP, UUID, VARCHAR
-from objects.prototypes import SinkPrototype
+from objects.prototypes import Prototype
 
 
 db_dtypes = {
@@ -41,9 +41,9 @@ db_dtypes = {
 }
 
 
-class Sink(SinkPrototype):
-    #def __init__(self, sink_name):
-    #    Prototype.__init__(self, sink_name, kind='sink')
+class Sink(Prototype):
+    def __init__(self, sink_name):
+        Prototype.__init__(self, sink_name, kind='sink')
 
     def type_mapping(self):
         dtypes = {}
@@ -94,6 +94,6 @@ class Sink(SinkPrototype):
             insert_data(payload)
         # TODO bare except!!!
         except:
-            self.logger.exception("[%u] Load data to DB failed" % os.getpid())
+            self.logger.exception("Load data to DB failed")
             raise SystemExit
         self.logger.info("[%u] Task is done successfully" % os.getpid())

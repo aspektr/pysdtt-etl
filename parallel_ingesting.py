@@ -4,7 +4,7 @@ from multiprocessing import util
 import time
 import os
 import signal
-from injector import Injector
+from objects.injector import Injector
 
 
 util.log_to_stderr(level=logging.DEBUG)
@@ -36,8 +36,8 @@ def run_in_parallel(producer):
     mp.set_start_method('spawn')
     logging.info("CPU=%d" % mp.cpu_count())
     # TODO add n=cores as parameters
-    # TODO Replace hard-code name of tably by parameter from config
-    pool = mp.Pool(None, init_redirect_load, [redirect_load, 'temp_table'])
+    # TODO Replace hard-code name of table. Get it from command-promt
+    pool = mp.Pool(None, init_redirect_load, [redirect_load, 'application_history'])  # 'temp_table'
     start_time = time.time()
     try:
         res = pool.imap_unordered(redirect_load, producer.generate_row())

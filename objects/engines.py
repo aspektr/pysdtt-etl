@@ -6,7 +6,7 @@ import os
 
 #  TODO add error handling
 def engine(object):
-    object.logger.debug("[%u] Ready to connect %s:%s" %
+    object.logger.info("[%u] Ready to connect %s:%s" %
                        (os.getpid(), object.config['host'], object.config['port']))
 
     # pandas - if all_data specified then we use pandas back-end both for source and sink

@@ -25,6 +25,7 @@ source_name:
     user: superset
     psw: DEkde3467XDer4G
     file: query/test.sql
+    cursor_size: 1000
 
 sink_name:
   application_history:
@@ -64,13 +65,13 @@ sink_name:
       regno: text
       phone: text
       okopf_name: text
-      location_adress_region_name: text
-      location_adress_city_name: text
-      location_adress_city_type: text
+      location_address_region_name: text
+      location_address_city_name: text
+      location_address_city_type: text
       registration_address_region_name: text
-      registration_adress_region_type: text
-      registration_adress_city_name: text
-      registration_adress_city_type: text
+      registration_address_region_type: text
+      registration_address_city_name: text
+      registration_address_city_type: text
       city_name: text
       activity_classifier_0_name: text
       service_set: varchar(128)

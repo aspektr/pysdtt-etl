@@ -34,8 +34,15 @@ loggers:
     level: INFO
     handlers: [console, info_file_handler, error_file_handler]
     propagate: no
-
   sink:
+    level: INFO
+    handlers: [console, info_file_handler, error_file_handler]
+    propagate: no
+  producer:
+    level: INFO
+    handlers: [console, info_file_handler, error_file_handler]
+    propagate: no
+  injector:
     level: INFO
     handlers: [console, info_file_handler, error_file_handler]
     propagate: no

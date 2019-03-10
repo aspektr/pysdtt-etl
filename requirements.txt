@@ -3,3 +3,5 @@ sqlalchemy
 yaml
 psycopg2
 argparse
+pymssql
+psycopg2

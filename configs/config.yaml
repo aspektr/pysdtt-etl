@@ -1,5 +1,5 @@
 source_name:
-  mydb:
+  source_mssql_db:
     type: mssql+pymssql
     host: localhost
     port: 1435
@@ -8,6 +8,16 @@ source_name:
     psw: 654321
     file: query/application_history.sql
     date_column: [time_status, prev_time_status, next_time_status, application_created_at, application_updated_at]
+  source_postgresql_db:
+    type: postgresql+psycopg2
+    host: localhost
+    port: 5432
+    dbname: superset
+    schema: upload
+    user: superset
+    psw: 123456
+    file: query/test.sql
+    cursor_size: 1000
 
 sink_name:
   application_history:
@@ -47,14 +57,14 @@ sink_name:
       regno: text
       phone: text
       okopf_name: text
-      location_adress-region_name: text
-      location_adress-city_name: text
-      location_adress-city_type: text
-      registration_adress-region_name: text
-      registration_adress-region_type: text
-      registration_adress-city_name: text
-      registration_adress-city_type: text
-      city_type: text
+      location_address_region_name: text
+      location_address_city_name: text
+      location_address_city_type: text
+      registration_address_region_name: text
+      registration_address_region_type: text
+      registration_address_city_name: text
+      registration_address_city_type: text
+      city_name: text
       activity_classifier_0_name: text
       service_set: varchar(128)
       branch_name: text

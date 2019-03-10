@@ -44,23 +44,11 @@ is able to transfer data from any sources to postgresql
 
 ### Config description
 
-source_name:
-  test_source2:
-    type: postgresql+psycopg2
-    host: 172.18.151.27
-    port: 5432
-    dbname: superset
-    schema: upload
-    user: superset
-    psw: DEkde3467XDer4G
-    file: query/test.sql
-    receive mode: batch
-
-source_name - section name, can't be changed
-test_source - source pseudonym, used in the command prompt
-type - type db, see also SQLAlchemy
-file - file containig query to db
-cursor_size - number of rows transmitted to insertion in one commitment (receive_mode = row_by_row or multiprocessing]
+* source_name - section name, can't be changed
+* test_source - source pseudonym, used in the command prompt
+* type - type db, see also SQLAlchemy
+* file - file containig query to db
+* cursor_size - number of rows transmitted to insertion in one commitment (receive_mode = row_by_row or multiprocessing]
 
 
 ### Command prompt

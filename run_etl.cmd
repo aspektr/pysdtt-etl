@@ -1,0 +1,2 @@
+C:\ProgramData\Anaconda3\python.exe etl.py --from source_postgresql_db --to application_history --mode all_data
+rem C:\ProgramData\Anaconda3\python.exe etl.py --from source_mssql_db --to application_history --mode multi

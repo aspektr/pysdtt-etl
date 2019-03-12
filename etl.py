@@ -29,7 +29,7 @@ if __name__ == '__main__':
     elif args.mode == 'multi':
         # run in parallel
         producer = Producer(args.from_source)
-        run_in_parallel(producer)
+        run_in_parallel(producer, args.to_sink)
 
         # batch data loading with pandas
         # payload = Source('test_source2').pull_data()

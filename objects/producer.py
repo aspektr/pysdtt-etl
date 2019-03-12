@@ -29,8 +29,8 @@ class Producer(SourcePrototype):
         for i, row in enumerate(self.cursor):
             list_rows.append(row)
             if (i+1) % self.config['cursor_size'] == 0:
-                yield list_rows
                 print_time_exec(start_time)
+                yield list_rows
                 list_rows, start_time = set_initial_values()
 
         print_time_exec(start_time)

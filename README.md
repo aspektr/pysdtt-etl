@@ -12,6 +12,19 @@ is able to transfer data from any sources to postgresql
 ## TODO
 * add csv support
 * add mongodb support
+*   It might be more convinient use in config the following schema defining the types:
+
+        int4:
+            col1
+            col2
+            col3
+        varchar(64):
+            col1
+            col2
+            col3
+
+* handle bug in multi mode, add error message when cursor_size is not specified
+
 
 ## Introduction
 <ul>
@@ -64,10 +77,32 @@ cursor_size - number of rows transmitted to insertion in one commitment (receive
 
 
 ### Command prompt
-receive_mode:
-* all_data, will be used pandas as backend
+mode:
+* all_data, will be used pandas as backend, doesn't work when source is mongodb
 * row_by_row,  will consume small batch from db cursor and load it into sink (specify cursor_size in the source_name section). This allows you to process unlimited or unknown amounts of data with a fixed amount of memory.
 * multi, the same as row_by_row, but much faster
+
+### Notice
+
+`There are two JSON data types: json and jsonb. They accept almost
+identical sets of values as input. The major practical difference is one
+of efficiency. The json data type stores an exact copy of the input text,
+which processing functions must reparse on each execution
+while jsonb data is stored in a decomposed binary format that makes it slightly
+slower to input due to added conversion overhead, but significantly faster
+to process, since no reparsing is needed. jsonb also supports indexing,
+which can be a significant advantage.
+
+Because the json type stores an exact copy of the input text,
+it will preserve semantically-insignificant white space between tokens,
+as well as the order of keys within JSON objects.
+Also, if a JSON object within the value contains the same key more than
+once, all the key/value pairs are kept.
+(The processing functions consider the last value as the operative one.)
+By contrast, jsonb does not preserve white space,
+does not preserve the order of object keys,
+and does not keep duplicate object keys.
+If duplicate keys are specified in the input, only the last value is kept.`
 
 ### Challenges with writing Custom ETL scripts to move data from MongoDB to PostgreSQL:
    1. Schema detection cannot be done up front
@@ -175,3 +210,6 @@ receive_mode:
    7. Data Type incompatibility between MongoDB and PostgreSQL
    Not all data types of MongoDB are compatible with PostgreSQL.
    ObjectId, Regular Expression, Javascript are not supported by PostgreSQL.
+
+
+

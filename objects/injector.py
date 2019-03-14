@@ -120,6 +120,7 @@ class Injector(SinkPrototype):
             return num_rows
 
         def execute(object, payload):
+            # TODO add mongodb support
             # ingestion with execute
             start_local_time = time.time()
             cols, vals_str = get_cols_and_vals(self, payload)

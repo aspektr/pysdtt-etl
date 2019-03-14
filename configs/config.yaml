@@ -8,6 +8,7 @@ source_name:
     psw: 123asDF!@#
     file: query/application_history.sql
     date_column: [time_status, prev_time_status, next_time_status, application_created_at, application_updated_at]
+    cursor_size: 1000
   test_source:
     type: mssql+pymssql
     host: localhost
@@ -16,6 +17,7 @@ source_name:
     user: quiz
     psw: 123asDF!@#
     file: query/test2.sql
+    cursor_size: 1000
   test_source2:
     type: postgresql+psycopg2
     host: 172.18.151.27

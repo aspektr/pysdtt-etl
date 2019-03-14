@@ -7,7 +7,7 @@ import os
 from objects.injector import Injector
 
 
-util.log_to_stderr(level=logging.WARN)
+util.log_to_stderr(level=logging.DEBUG)
 
 # Start methods
 # windows and linux

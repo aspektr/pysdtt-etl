@@ -80,7 +80,7 @@ class SinkPrototype(Prototype):
 
     def create_table(self):
         # TODO add an opportunity (via config) create UNLOGGED TABLE
-        # TODO add an opportunity create tabele WITH (autovacuum_enabled=false)
+        # TODO add an opportunity create table WITH (autovacuum_enabled=false)
         # This saves CPU time and IO bandwidth on useless vacuuming of the table
         # (since we never DELETE or UPDATE the table).
         ddl = "CREATE TABLE %s.%s (" % (self.config['schema'], self.config['table'])

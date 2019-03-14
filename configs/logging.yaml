@@ -31,19 +31,19 @@ handlers:
 
 loggers:
   source:
-    level: INFO
+    level: DEBUG
     handlers: [console, info_file_handler, error_file_handler]
     propagate: no
   sink:
-    level: INFO
+    level: DEBUG
     handlers: [console, info_file_handler, error_file_handler]
     propagate: no
   producer:
-    level: INFO
+    level: DEBUG
     handlers: [console, info_file_handler, error_file_handler]
     propagate: no
   injector:
-    level: INFO
+    level: DEBUG
     handlers: [console, info_file_handler, error_file_handler]
     propagate: no
 

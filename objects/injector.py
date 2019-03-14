@@ -23,11 +23,20 @@ class Injector(SinkPrototype):
                 VALUES($1, $2, $3, $4, $5, $6, $7, $8);
         """
         table = self.config['schema'] + '.' + self.config['table']
-        prepare_statement = "PREPARE insert_data AS INSERT INTO " + table + "("
-        for field_name in self.config['dtypes']:
-            prepare_statement += '%s, ' % field_name
+        prepare_statement = "PREPARE insert_data( "
+
+        # prepare data types str
+        for column_name in self.config['dtypes']:
+            prepare_statement += '%s, ' % self.config['dtypes'][column_name]
+        prepare_statement = prepare_statement[:-2] + ")"
+        prepare_statement += " AS INSERT INTO " + table + "("
+
+        # prepare columns name str
+        for column_name in self.config['dtypes']:
+            prepare_statement += '%s, ' % column_name
         prepare_statement = prepare_statement[:-2] + ") VALUES ("
 
+        # prepare template str for values like $1, $2, ...
         for i in range(1, len(self.config['dtypes']) + 1):
             prepare_statement += '$%s, ' % i
         prepare_statement = prepare_statement[:-2] + ');'

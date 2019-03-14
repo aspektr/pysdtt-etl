@@ -28,6 +28,16 @@ source_name:
     psw: DEkde3467XDer4G
     file: query/test.sql
     cursor_size: 1000
+  test_json:
+    type: postgresql+psycopg2
+    host: 172.18.151.27
+    port: 5432
+    dbname: superset
+    schema: upload
+    user: superset
+    psw: DEkde3467XDer4G
+    file: query/test_json.sql
+    cursor_size: 1000
 
 sink_name:
   application_history:
@@ -134,7 +144,7 @@ sink_name:
       bank_service_0_name: text
       bank_service_1_name: text
       staff_number: int4
-  test_sink:
+  json_test:
     type: postgresql+psycopg2
     host: 172.18.151.27
     port: 5432
@@ -143,10 +153,50 @@ sink_name:
     user: superset
     psw: DEkde3467XDer4G
     if_exists: replace
-    table: temp
+    table: json_test
     method: multi
     dtypes:
-      location_adress_region_name: int4
+      id_application: integer
+      time_status: timestamp
+      name: varchar(128)
+      reason: varchar(128)
+      description: text
+      prev_name: varchar(128)
+      prev_reason: varchar(128)
+      prev_description: text
+      prev_time_status: timestamp
+      next_name: varchar(128)
+      next_reason: varchar(128)
+      next_description: text
+      next_time_status: timestamp
+      processing_stage_in_minutes: int4
+      sla: varchar(64)
+      processing_application_in_hours: int4
+      id_form: int4
+      last_status: varchar(128)
+      last_description: varchar(128)
+      application_created_at: timestamp
+      application_updated_at: timestamp
+      title: text
+      regno: text
+      phone: text
+      okopf_name: text
+      location_address_region_name: text
+      location_address_city_name: text
+      location_address_city_type: text
+      registration_address_region_name: text
+      registration_address_region_type: text
+      registration_address_city_name: text
+      registration_address_city_type: text
+      city_name: text
+      activity_classifier_0_name: text
+      service_set: varchar(128)
+      branch_name: text
+      office_name: text
+      bank_service_0_name: text
+      bank_service_1_name: text
+      staff_number: int4
+      jsonb_test: jsonb[]
 
 
 

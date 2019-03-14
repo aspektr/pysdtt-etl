@@ -68,6 +68,7 @@ class Sink(SinkPrototype):
             self.logger.debug("[%u] The field %s is mapped to a %s" %
                               (os.getpid(), field, db_dtypes[f_type](length)))
 
+        # TODO test types-arrays like int[], json[], jsonb[]
         for field in self.config['dtypes']:
             if '(' not in self.config['dtypes'][field]:
                 map_types_without_length(dtypes)

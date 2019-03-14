@@ -1,1 +1,1 @@
-select * from upload.application_history limit 1200;
+select * from upload.application_history limit 100;

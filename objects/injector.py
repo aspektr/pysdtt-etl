@@ -1,5 +1,6 @@
 import psycopg2
 import psycopg2.errorcodes
+import json
 import os
 import time
 from objects.prototypes import SinkPrototype
@@ -50,8 +51,8 @@ class Injector(SinkPrototype):
               EXECUTE insert_data(%(id)s, %(type)s, %(public)s, %(created_at)s, %(actor)s, %(repo)s, %(org)s, %(payload)s);
         """
         insert_statement = """EXECUTE insert_data ("""
-        for field_name in self.config['dtypes']:
-            insert_statement += """%%(%s)s, """ % field_name
+        for column_name in self.config['dtypes']:
+            insert_statement += """%%(%s)s::%s, """ % (column_name, self.config['dtypes'][column_name])
         insert_statement = insert_statement[:-2] + ');'
         self.logger.debug("""Insert statement - %s""" % insert_statement)
         return insert_statement
@@ -72,6 +73,10 @@ class Injector(SinkPrototype):
             for payload in producer.generate_row():
                 for row in payload:
                     rows += 1
+                    # wrap array
+                    for column_name in row:
+                        if 'jsonb[]' in object.config['dtypes'][column_name]:
+                            row[column_name] = [json.dumps(jdoc) for jdoc in row[column_name]]
                     object.logger.debug("[%u] Row for ingesting: %s" % (os.getpid(), row))
                     object.cursor.execute(self.insert_statement, row)
                     if rows == producer.config['cursor_size']:

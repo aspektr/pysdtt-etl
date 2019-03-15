@@ -9,5 +9,10 @@ def get_cursor(object):
     elif object.config['type'] == 'postgresql+psycopg2':
         cursor = object.connection.cursor(name='result_to_dict', cursor_factory=psycopg2.extras.RealDictCursor)
         return cursor
+    elif object.config['type'] == 'mongodb':
+        cursor = object.connection.find(object.query['filter'], object.query['projection'])
+        # gap-closure because mongo cursor hasn't execute method
+        cursor.execute = lambda x: None
+        return cursor
     else:
         object.logger.error("Type db is not supported")

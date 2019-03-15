@@ -1,5 +1,7 @@
 import pymssql
 import psycopg2
+import pymongo
+import urllib.parse
 from sqlalchemy import create_engine
 import os
 
@@ -43,6 +45,11 @@ def get_source_connection_string(object):
     elif object.config['type'] == 'postgresql+psycopg2':
         conn = get_psycopg_connection(object)
         return conn
+    elif object.config['type'] == 'mongodb':
+        conn = get_mongodb_connection(object)
+        return conn
+    else:
+        object.logger.error("Specify the correct type db in config file or correct arguments")
 
 
 def get_sink_connection_string(object):
@@ -65,3 +72,18 @@ def get_psycopg_connection(object):
                             password=object.config['psw'],
                             host=object.config['host'],
                             port=object.config['port'])
+
+
+def get_mongodb_connection(object):
+    username = urllib.parse.quote_plus('company_reader')
+    password = urllib.parse.quote_plus('YSPXvswq')
+    client = pymongo.MongoClient('%s://%s:%s@%s:%s/%s' %
+                                 (object.config['type'],
+                                  username,
+                                  password,
+                                  object.config['host'],
+                                  object.config['port'],
+                                  object.config['dbname']))
+    db = client[object.config['dbname']]
+    collection = db[object.config['collection']]
+    return collection

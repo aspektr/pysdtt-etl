@@ -38,6 +38,16 @@ source_name:
     psw: DEkde3467XDer4G
     file: query/test_json.sql
     cursor_size: 1000
+  test_mongo:
+    type: mongodb
+    host: localhost
+    port: 17017
+    dbname: companydb
+    collection: company
+    user: company_reader
+    psw: YSPXvswq
+    file: query/mongo_query.yaml
+    cursor_size: 1000
 
 sink_name:
   application_history:

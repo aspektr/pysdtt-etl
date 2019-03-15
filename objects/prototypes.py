@@ -4,6 +4,7 @@ import os
 import sys
 from objects.engines import engine
 from objects.engines import get_sink_connection_string
+from objects.query_reader import read_query
 
 
 class Prototype:
@@ -37,11 +38,7 @@ class SourcePrototype(Prototype):
         Prototype.__init__(self, source_name, kind='source')
 
         # Read file containing query
-        with open(self.config['file'], 'r', encoding='utf8') as query_file:
-            query = query_file.read().replace('\n', ' ').replace('\t', ' ')
-        self.query = query
-        self.logger.info("[%u] Loading query from %s" %
-                         (os.getpid(), self.config['file']))
+        self.query = read_query(self)
         self.logger.debug("[%u] Query is %s" %
                           (os.getpid(), self.query))
 

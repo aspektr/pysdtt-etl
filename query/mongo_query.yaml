@@ -1,0 +1,18 @@
+filter:
+  ogrn:
+    $exists: True
+projection:
+  id: 1
+  modifiedAt: 1
+  masterSource: 1
+  ogrn: 1
+  ibsoId: 1
+  fullName: 1
+  okopfName: 1
+  okopfCode: 1
+  taxInspectionCode: 1
+  taxInspectionName: 1
+  taxpayerNumber: 1
+  regDate: 1
+  okato: 1
+  oktmo: 1

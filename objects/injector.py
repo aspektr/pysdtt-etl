@@ -48,7 +48,7 @@ class Injector(SinkPrototype):
     def _create_insert_statement(self):
         """
         :return: str insert statement for postgresql, something like that
-              EXECUTE insert_data(%(id)s, %(type)s, %(public)s, %(created_at)s, %(actor)s, %(repo)s, %(org)s, %(payload)s);
+        EXECUTE insert_data(%(id)s, %(type)s, %(public)s, %(created_at)s, %(actor)s, %(repo)s, %(org)s, %(payload)s);
         """
         insert_statement = """EXECUTE insert_data ("""
         for column_name in self.config['dtypes']:
@@ -103,8 +103,13 @@ class Injector(SinkPrototype):
         def get_cols_and_vals(object, input_data):
             row_example = input_data[0]
             columns = ", ".join(list(row_example.keys()))
-            vals_str_list = ["%s"] * len(row_example)
-            values_str = ", ".join(vals_str_list)
+            values_str = ""
+            for column_name in object.config['dtypes']:
+                values_str += """%s::""" + """%s, """ % self.config['dtypes'][column_name]
+            values_str = values_str[:-2]
+            # TODO legacy code below is exist while you don't check how the execute method works with the renewed func
+            # vals_str_list = ["%s"] * len(row_example)
+            # values_str = ", ".join(vals_str_list)
             object.logger.debug("[%u] Columns for ingesting: %s" % (os.getpid(), columns))
             return columns, values_str
 
@@ -117,9 +122,10 @@ class Injector(SinkPrototype):
             for num_rows, inp_row in enumerate(payload):
                 vals += [[inp_row[x] for x in inp_row]]
 
+            # TODO some types can can cast 2 times, for instance '2018-10-05T16:46:59'::timestamp::timestamp'
             args_str = ','.join(object.cursor.mogrify("({template})".format(template=vals_str), row).decode('utf8') for row in vals)
             table = object.config['schema'] + '.' + object.config['table']
-
+            object.logger.debug("Mogrify values: %s" % args_str)
             object.cursor.execute("INSERT INTO {table} ({cols}) VALUES".format(table=table, cols=cols) + args_str)
 
             took_local = time.time() - start_local_time
@@ -151,7 +157,6 @@ class Injector(SinkPrototype):
             object.logger.info("[%u] cursor execute %d rows in %f seconds, %f rows/sec" % (
                 os.getpid(), num_rows+1, took_local, num_rows/took_local))
             return num_rows
-
 
         start_time = time.time()
         self.logger.info("[%u] Start ingesting..." % os.getpid())

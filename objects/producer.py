@@ -9,7 +9,7 @@ class Producer(SourcePrototype):
         SourcePrototype.__init__(self, source_name)
         try:
             self.cursor = get_cursor(self)
-            self.cursor.execute(self.sql)
+            self.cursor.execute(self.query)
         # TODO bare except!!!
         except:
             self.logger.exception("Load data from DB failed")

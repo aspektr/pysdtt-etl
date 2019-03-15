@@ -36,14 +36,14 @@ class SourcePrototype(Prototype):
     def __init__(self, source_name):
         Prototype.__init__(self, source_name, kind='source')
 
-        # Read file containing sql query
-        with open(self.config['file'], 'r', encoding='utf8') as sqlfile:
-            sql_query = sqlfile.read().replace('\n', ' ').replace('\t', ' ')
-        self.sql = sql_query
-        self.logger.info("[%u] Loading SQL query from %s" %
+        # Read file containing query
+        with open(self.config['file'], 'r', encoding='utf8') as query_file:
+            query = query_file.read().replace('\n', ' ').replace('\t', ' ')
+        self.query = query
+        self.logger.info("[%u] Loading query from %s" %
                          (os.getpid(), self.config['file']))
-        self.logger.debug("[%u] SQL query is %s" %
-                          (os.getpid(), self.sql))
+        self.logger.debug("[%u] Query is %s" %
+                          (os.getpid(), self.query))
 
         # Define column to parse as dates
         if 'date_column' in self.config:
@@ -96,4 +96,4 @@ class SinkPrototype(Prototype):
         if self.table_exists():
             self.logger.info("[%u] Table's created successfully" % os.getpid())
         else:
-            self.logger.info("[%u] Table hasn't created" % os.getpgid())
+            self.logger.info("[%u] Table hasn't created" % os.getpid())

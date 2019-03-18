@@ -66,13 +66,13 @@ class SinkPrototype(Prototype):
     def table_exists(self):
         self.logger.debug("[%u] Check the table %s.%s for existing" %
                          (os.getpid(), self.config['schema'], self.config['table']))
-        self.cursor.execute("select * from information_schema.tables where table_name='%s'" %
-                            self.config['table'])
+        self.cursor.execute("select * from information_schema.tables where table_name='%s' and table_schema='%s'" %
+                            (self.config['table'], self.config['schema']))
         self.logger.debug("[%u] Exist? %s" %
                           (os.getpid(), self.cursor.rowcount))
         if self.cursor.rowcount:
             self.logger.debug("[%u] The table '%s' exists" %
-                             (os.getpid(), self.config['table']))
+                              (os.getpid(), self.config['table']))
         return self.cursor.rowcount
 
     def create_table(self):
@@ -88,8 +88,15 @@ class SinkPrototype(Prototype):
 
         self.logger.debug("[%u] Run the following sql %s" %
                           (os.getpid(), ddl))
-        self.cursor.execute(ddl)
-        self.connection.commit()
+        # we can't use
+        # self.cursor.execute(ddl) and
+        # self.connection.commit()
+        # because when back-end is pandas self.connection means sqlalchemy engine
+        # so we create another connection to postgresql
+        with get_sink_connection_string(self) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(ddl)
+
         if self.table_exists():
             self.logger.info("[%u] Table's created successfully" % os.getpid())
         else:

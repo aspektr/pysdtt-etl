@@ -60,6 +60,7 @@ class Sink(SinkPrototype):
             self.logger.debug("[%u] The field %s has type %s. It's necceary to isolate the number in ()" %
                               (os.getpid(), field, self.config['dtypes'][field]))
             # extract length from type, for instance: varchar(128) => 128
+            # TODO There is a bug, because numeric(5,2) will be convert into numeric(52)
             length = int(''.join([char for char in self.config['dtypes'][field] if char.isdigit()]))
             # extract type
             f_type = self.config['dtypes'][field]

@@ -5,6 +5,8 @@ import sys
 from objects.engines import engine
 from objects.engines import get_sink_connection_string
 from objects.query_reader import read_query
+from pandas import read_sql_query
+from objects.engines import get_pandas_connection_string
 
 
 class Prototype:
@@ -32,15 +34,15 @@ class Prototype:
         # connection
         self.connection = engine(self)
 
-
-class SourcePrototype(Prototype):
-    def __init__(self, source_name):
-        Prototype.__init__(self, source_name, kind='source')
-
         # Read file containing query
         self.query = read_query(self)
         self.logger.debug("[%u] Query is %s" %
                           (os.getpid(), self.query))
+
+
+class SourcePrototype(Prototype):
+    def __init__(self, source_name):
+        Prototype.__init__(self, source_name, kind='source')
 
         # Define column to parse as dates
         if 'date_column' in self.config:
@@ -60,6 +62,14 @@ class SinkPrototype(Prototype):
             self.logger.info("[%u] Table %s doesn't exist. Creating..." %
                              (os.getpid(), self.config['table']))
             self.create_table()
+
+        self.metadata = self.get_table_metadata()
+
+        new_cols = self.check_col()
+        if new_cols != set():
+            dtypes = {k.lower(): self.config['dtypes'][k] for k in self.config['dtypes']}
+            for col in new_cols:
+                self.create_column(col, dtypes[col])
 
         # TODO add behaviour for if_exists parameter from config.yaml
 
@@ -101,3 +111,44 @@ class SinkPrototype(Prototype):
             self.logger.info("[%u] Table's created successfully" % os.getpid())
         else:
             self.logger.info("[%u] Table hasn't created" % os.getpid())
+
+    def get_table_metadata(self):
+        """
+        :return: DataFrame with table metadata
+        """
+        self.logger.debug("[%u] Read metadata of sink table %s" %
+                          (os.getpid(), self.config['table']))
+        return read_sql_query(self.query,
+                              get_pandas_connection_string(self),
+                              params={'schema': self.config['schema'],
+                                      'table': self.config['table']})
+
+    def check_col(self):
+        """Compare col in config and in db
+        :return: set of new cols
+        """
+        return (set(map(lambda x: x.lower(),
+                        self.config['dtypes'])) -
+                set(self.metadata.name.values))
+
+    def create_column(self, new_column, dtype):
+        """
+            Create column in sink table
+        :param new_column: str new column name
+        :param dtype: str new column type
+        :return: None
+        """
+        self.logger.debug("[%u] Ready to add column %s" %
+                          (os.getpid(), new_column))
+        ddl = """
+            ALTER TABLE {schema}.{table}
+            ADD COLUMN {col} {type}
+        """
+        with get_sink_connection_string(self) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(ddl.format(schema=self.config['schema'],
+                                          table=self.config['table'],
+                                          col=new_column,
+                                          type=dtype))
+        self.logger.debug("[%u] Column %s has been added"  %
+                          (os.getpid(), new_column))

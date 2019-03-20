@@ -109,7 +109,7 @@ replace uuid_generate_v1() by serial
 
 ### Notice
 
-`There are two JSON data types: json and jsonb. They accept almost
+There are two JSON data types: json and jsonb. They accept almost
 identical sets of values as input. The major practical difference is one
 of efficiency. The json data type stores an exact copy of the input text,
 which processing functions must reparse on each execution
@@ -127,7 +127,7 @@ once, all the key/value pairs are kept.
 By contrast, jsonb does not preserve white space,
 does not preserve the order of object keys,
 and does not keep duplicate object keys.
-If duplicate keys are specified in the input, only the last value is kept.`
+If duplicate keys are specified in the input, only the last value is kept.
 
 ### Challenges with writing Custom ETL scripts to move data from MongoDB to PostgreSQL:
    1. Schema detection cannot be done up front
@@ -237,4 +237,12 @@ If duplicate keys are specified in the input, only the last value is kept.`
    ObjectId, Regular Expression, Javascript are not supported by PostgreSQL.
 
 
+### mongo-phyton-driver
 
+`Do not install the "bson" package from pypi.` PyMongo comes with its own bson package;
+doing "easy_install bson" installs a third-party package that is incompatible with PyMongo.
+If you have some problems with bson it's better install pymongo from source
+
+    $ git clone git://github.com/mongodb/mongo-python-driver.git pymongo
+    $ cd pymongo/
+    $ python setup.py install

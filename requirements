@@ -4,4 +4,4 @@ yaml
 psycopg2==2.5.4
 argparse
 pymssql
-pymongo
+pymongo==3.9

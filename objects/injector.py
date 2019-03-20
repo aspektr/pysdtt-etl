@@ -4,6 +4,7 @@ import json
 import os
 import time
 from objects.prototypes import SinkPrototype
+from bson import json_util
 
 
 class Injector(SinkPrototype):
@@ -73,10 +74,21 @@ class Injector(SinkPrototype):
             for payload in producer.generate_row():
                 for row in payload:
                     rows += 1
-                    # wrap array
-                    for column_name in row:
+                    # wrap arrays in row
+                    # TODO refactor this (create func wrap_json)
+                    for column_name in object.config['dtypes']:
+                        # mongodb column can be omitted
+                        if column_name not in row:
+                            row[column_name] = None if '[]' not in object.config['dtypes'][column_name] else []
                         if 'jsonb[]' in object.config['dtypes'][column_name]:
-                            row[column_name] = [json.dumps(jdoc) for jdoc in row[column_name]]
+                            object.logger.debug("column_name: %s type: jsonb[] \n str before json.dumps: %s" %
+                                                (column_name, row[column_name]))
+                            row[column_name] = [json.dumps(jdoc, default=json_util.default) for jdoc in row[column_name]]
+                            object.logger.debug("jsonb[] after json.dumps: %s" % row[column_name])
+                        elif 'jsonb' in object.config['dtypes'][column_name]:
+                            object.logger.debug("jsonb before json.dumps: %s" % row[column_name])
+                            row[column_name] = json.dumps(row[column_name], default=json_util.default)
+                            object.logger.debug("jsonb after json.dumps: %s" % row[column_name])
                     object.logger.debug("[%u] Row for ingesting: %s" % (os.getpid(), row))
                     object.cursor.execute(self.insert_statement, row)
                     if rows == producer.config['cursor_size']:

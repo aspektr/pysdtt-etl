@@ -4,6 +4,9 @@ import pymongo
 import urllib.parse
 from sqlalchemy import create_engine
 import os
+from objects.custom_objectid import ObjectIdCodec
+from bson.codec_options import TypeRegistry
+from bson.codec_options import CodecOptions
 
 
 #  TODO add error handling
@@ -75,6 +78,10 @@ def get_psycopg_connection(object):
 
 
 def get_mongodb_connection(object):
+    objectid_codec = ObjectIdCodec()
+    type_registry = TypeRegistry([objectid_codec])
+    codec_options = CodecOptions(type_registry=type_registry)
+
     username = urllib.parse.quote_plus('company_reader')
     password = urllib.parse.quote_plus('YSPXvswq')
     client = pymongo.MongoClient('%s://%s:%s@%s:%s/%s' %
@@ -85,5 +92,5 @@ def get_mongodb_connection(object):
                                   object.config['port'],
                                   object.config['dbname']))
     db = client[object.config['dbname']]
-    collection = db[object.config['collection']]
+    collection = db.get_collection(object.config['collection'], codec_options=codec_options)
     return collection

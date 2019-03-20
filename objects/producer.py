@@ -37,5 +37,6 @@ class Producer(SourcePrototype):
         yield list_rows
 
     def stop_generate_row(self):
-        self.cursor.close()
-        self.connection.close()
+        if self.config['type'] != 'mongodb':
+            self.cursor.close()
+            self.connection.close()

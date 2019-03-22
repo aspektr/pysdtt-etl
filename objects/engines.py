@@ -82,8 +82,8 @@ def get_mongodb_connection(object):
     type_registry = TypeRegistry([objectid_codec])
     codec_options = CodecOptions(type_registry=type_registry)
 
-    username = urllib.parse.quote_plus('company_reader')
-    password = urllib.parse.quote_plus('YSPXvswq')
+    username = urllib.parse.quote_plus(object.config['user'])
+    password = urllib.parse.quote_plus(object.config['psw'])
     client = pymongo.MongoClient('%s://%s:%s@%s:%s/%s' %
                                  (object.config['type'],
                                   username,

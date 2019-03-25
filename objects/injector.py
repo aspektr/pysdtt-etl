@@ -5,6 +5,7 @@ import os
 import time
 from objects.prototypes import SinkPrototype
 from bson import json_util
+from sortedcontainers import SortedDict
 
 
 class Injector(SinkPrototype):
@@ -122,27 +123,29 @@ class Injector(SinkPrototype):
 
     def ingest_row(self, payload):
 
-        def get_cols_and_vals(object, input_data):
-            row_example = input_data[0]
-            columns = ", ".join(list(row_example.keys()))
+        def get_cols_and_vals(object):
+            dtypes = SortedDict(object.config['dtypes'])
+            columns = ", ".join(list(dtypes))
             values_str = ""
-            for column_name in object.config['dtypes']:
-                values_str += """%s::""" + """%s, """ % self.config['dtypes'][column_name]
+            for column_name in dtypes:
+                values_str += """%s::""" + """%s, """ % dtypes[column_name]
             values_str = values_str[:-2]
             # TODO legacy code below is exist while you don't check how the execute method works with the renewed func
             # vals_str_list = ["%s"] * len(row_example)
             # values_str = ", ".join(vals_str_list)
             object.logger.debug("[%u] Columns for ingesting: %s" % (os.getpid(), columns))
+            object.logger.debug("[%u] Template string: %s" % (os.getpid(), values_str))
             return columns, values_str
 
         def mogrify_execute(object, payload):
             # ingestion with mogrify
             start_local_time = time.time()
             vals = []
-            cols, vals_str = get_cols_and_vals(self, payload)
+            cols, vals_str = get_cols_and_vals(object)
 
             for num_rows, inp_row in enumerate(payload):
-                vals += [[inp_row[x] for x in inp_row]]
+                row = object._wrap_arrays_and_nulls(inp_row)
+                vals += [[row[x] for x in row]]
 
             # TODO some types can can cast 2 times, for instance '2018-10-05T16:46:59'::timestamp::timestamp'
             args_str = ','.join(object.cursor.mogrify("({template})".format(template=vals_str), row).decode('utf8') for row in vals)

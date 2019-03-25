@@ -66,6 +66,30 @@ class Injector(SinkPrototype):
         self.cursor.execute("""DEALLOCATE PREPARE insert_data""")
         raise SystemExit
 
+    def _wrap_arrays_and_nulls(self, row):
+        """
+            Checks skipped columns in row and adds null value if column is skipped,
+            wraps jsonb and jsonb[] so that row can be inserted into postgres
+        :param row: dict to handle
+        :return: wrapped row
+        """
+        for column_name in self.config['dtypes']:
+            # mongodb column can be omitted
+            if column_name not in row:
+                self.logger.debug("[%u] Column %s is being skipped" %
+                                    (os.getpid(), column_name))
+                row[column_name] = None if '[]' not in self.config['dtypes'][column_name] else []
+            if 'jsonb[]' in self.config['dtypes'][column_name]:
+                self.logger.debug("column_name: %s type: jsonb[] \n str before json.dumps: %s" %
+                                  (column_name, row[column_name]))
+                row[column_name] = [json.dumps(jdoc, default=json_util.default) for jdoc in row[column_name]]
+                self.logger.debug("jsonb[] after json.dumps: %s" % row[column_name])
+            elif 'jsonb' in self.config['dtypes'][column_name]:
+                self.logger.debug("jsonb before json.dumps: %s" % row[column_name])
+                row[column_name] = json.dumps(row[column_name], default=json_util.default)
+                self.logger.debug("jsonb after json.dumps: %s" % row[column_name])
+        return SortedDict(row)
+
     def ingest_from(self, producer):
 
         global_start_time = time.time()
@@ -74,27 +98,13 @@ class Injector(SinkPrototype):
             for payload in producer.generate_row():
                 for row in payload:
                     rows += 1
-                    # wrap arrays in row
-                    # TODO refactor this (create func wrap_json)
-                    for column_name in object.config['dtypes']:
-                        # mongodb column can be omitted
-                        if column_name not in row:
-                            row[column_name] = None if '[]' not in object.config['dtypes'][column_name] else []
-                        if 'jsonb[]' in object.config['dtypes'][column_name]:
-                            object.logger.debug("column_name: %s type: jsonb[] \n str before json.dumps: %s" %
-                                                (column_name, row[column_name]))
-                            row[column_name] = [json.dumps(jdoc, default=json_util.default) for jdoc in row[column_name]]
-                            object.logger.debug("jsonb[] after json.dumps: %s" % row[column_name])
-                        elif 'jsonb' in object.config['dtypes'][column_name]:
-                            object.logger.debug("jsonb before json.dumps: %s" % row[column_name])
-                            row[column_name] = json.dumps(row[column_name], default=json_util.default)
-                            object.logger.debug("jsonb after json.dumps: %s" % row[column_name])
+                    row = object._wrap_arrays_and_nulls(row)
                     object.logger.debug("[%u] Row for ingesting: %s" % (os.getpid(), row))
                     object.cursor.execute(self.insert_statement, row)
                     if rows == producer.config['cursor_size']:
                         took = time.time() - local_start_time
                         object.logger.info("[%u] loaded %d rows in %.2f seconds, %.2f rows/sec" %
-                                         (os.getpid(), rows, took, rows/took))
+                                           (os.getpid(), rows, took, rows/took))
                         object.connection.commit()
                         rows = 0
                         local_start_time = time.time()

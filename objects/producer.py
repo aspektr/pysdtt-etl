@@ -18,7 +18,7 @@ class Producer(SourcePrototype):
     def generate_row(self):
 
         def print_time_exec(start_time):
-            took = time.time() - start_time
+            took = time.time() - start_time or 0.0009
             self.logger.info("[%u] got %d rows in %f seconds, %f rows/sec" % (
                 os.getpid(), len(list_rows), took, len(list_rows)/took))
 

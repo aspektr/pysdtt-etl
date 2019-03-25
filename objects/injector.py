@@ -153,12 +153,14 @@ class Injector(SinkPrototype):
             object.logger.debug("Mogrify values: %s" % args_str)
             object.cursor.execute("INSERT INTO {table} ({cols}) VALUES".format(table=table, cols=cols) + args_str)
 
+            # TODO repeated piece of code is detected
             took_local = time.time() - start_local_time
             object.logger.info("[%u] cursor execute %d rows in %f seconds, %f rows/sec" % (
                 os.getpid(), num_rows+1, took_local, num_rows/took_local))
 
             start_local_time = time.time()
             object.connection.commit()
+            # TODO repeated piece of code is detected
             took_local = time.time() - start_local_time
             object.logger.info("[%u] commit %d rows in %f seconds, %f rows/sec" % (
                 os.getpid(), num_rows+1, took_local, num_rows/took_local))
@@ -172,6 +174,7 @@ class Injector(SinkPrototype):
             table = object.config['schema'] + '.' + object.config['table']
 
             for num_rows, inp_row in enumerate(payload):
+                # TODO wrap x with _wrap_arrays_and_nulls func
                 vals = [inp_row[x] for x in cols.split(', ')]
                 object.logger.debug("INSERT INTO {table} ({cols}) VALUES ({vals_str})".format(
                     table=table, cols=cols, vals_str=vals_str))

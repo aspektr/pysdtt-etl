@@ -5,6 +5,8 @@ import time
 import signal
 import os
 from objects.injector import Injector
+import traceback
+import functools
 
 util.log_to_stderr(level=logging.INFO)
 
@@ -31,7 +33,7 @@ def trace_unhandled_exceptions(func):
 def redirect_load(arg):
     return redirect_load.func(arg)
 
-
+@trace_unhandled_exceptions
 def init_redirect_load(redirect_load, table):
     saver = Injector(table)
     signal.signal(signal.SIGINT, signal.SIG_IGN)
@@ -48,6 +50,8 @@ def run_in_parallel(producer, to_sink):
         res = pool.map(redirect_load, producer.generate_row())
         pool.close()
         pool.join()
+    # TODO exceptions don't work See http://jessenoller.com/blog/2009/01/08/multiprocessingpool-and-keyboardinterrupt
+    # TODO when exception occurs exit code = 0 (must be 1!)
     except KeyboardInterrupt:
         print("Exception")
         pool.terminate()

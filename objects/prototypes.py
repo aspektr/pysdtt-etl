@@ -18,7 +18,7 @@ class Prototype:
         logs.setup()
         self.logger = logs.logging.getLogger(self.name)
         self.logger.debug("[%u] Instance %s create with the following args: %s" %
-                         (os.getpid(), self.name, sys.argv))
+                          (os.getpid(), self.name, sys.argv))
         # args from command prompt
         self.args = sys.argv
 
@@ -75,7 +75,7 @@ class SinkPrototype(Prototype):
 
     def table_exists(self):
         self.logger.debug("[%u] Check the table %s.%s for existing" %
-                         (os.getpid(), self.config['schema'], self.config['table']))
+                          (os.getpid(), self.config['schema'], self.config['table']))
         self.cursor.execute("select * from information_schema.tables where table_name='%s' and table_schema='%s'" %
                             (self.config['table'], self.config['schema']))
         self.logger.debug("[%u] Exist? %s" %
@@ -150,5 +150,5 @@ class SinkPrototype(Prototype):
                                           table=self.config['table'],
                                           col=new_column,
                                           type=dtype))
-        self.logger.debug("[%u] Column %s has been added"  %
+        self.logger.debug("[%u] Column %s has been added" %
                           (os.getpid(), new_column))

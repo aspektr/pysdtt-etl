@@ -6,8 +6,7 @@ import signal
 import os
 from objects.injector import Injector
 
-
-util.log_to_stderr(level=logging.DEBUG)
+util.log_to_stderr(level=logging.INFO)
 
 # Start methods
 # windows and linux
@@ -16,6 +15,17 @@ util.log_to_stderr(level=logging.DEBUG)
 # mp.set_start_method('spawn')
 # Available on Unix platforms which support passing file descriptors over Unix pipes.
 # mp.set_start_method('forkserver')
+
+
+def trace_unhandled_exceptions(func):
+    @functools.wraps(func)
+    def wrapped_func(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except:
+            print('Exception in '+func.__name__)
+            traceback.print_exc()
+    return wrapped_func
 
 
 def redirect_load(arg):
@@ -35,7 +45,7 @@ def run_in_parallel(producer, to_sink):
     pool = mp.Pool(None, init_redirect_load, [redirect_load, to_sink])
     start_time = time.time()
     try:
-        res = pool.imap_unordered(redirect_load, producer.generate_row())
+        res = pool.map(redirect_load, producer.generate_row())
         pool.close()
         pool.join()
     except KeyboardInterrupt:
@@ -46,5 +56,4 @@ def run_in_parallel(producer, to_sink):
     producer.stop_generate_row()
     took = time.time() - start_time
     logging.info("[%u] Total time %s" % (os.getpid(), took))
-
 

@@ -59,9 +59,10 @@ class SinkPrototype(Prototype):
         self.cursor = get_sink_connection_string(self).cursor()
 
         if not self.table_exists():
-            self.logger.info("[%u] Table %s doesn't exist. Creating..." %
-                             (os.getpid(), self.config['table']))
             self.create_table()
+        # pandas already has handler for if_exists param, thus we need implement it only for another modes
+        elif 'all_data' not in self.args:
+            self._if_exists_execute()
 
         self.metadata = self.get_table_metadata()
 
@@ -90,6 +91,8 @@ class SinkPrototype(Prototype):
         # TODO add an opportunity create table WITH (autovacuum_enabled=false)
         # This saves CPU time and IO bandwidth on useless vacuuming of the table
         # (since we never DELETE or UPDATE the table).
+        self.logger.info("[%u] Table %s doesn't exist. Creating..." %
+                         (os.getpid(), self.config['table']))
         ddl = "CREATE TABLE %s.%s (" % (self.config['schema'], self.config['table'])
         for field in self.config['dtypes']:
             ddl += field + " " + self.config['dtypes'][field] + " NULL, "
@@ -152,3 +155,27 @@ class SinkPrototype(Prototype):
                                           type=dtype))
         self.logger.debug("[%u] Column %s has been added" %
                           (os.getpid(), new_column))
+
+    def _if_exists_execute(self):
+        """
+        if_exists : {‘fail’, ‘replace’, ‘append’}, default ‘fail’
+        How to behave if the table already exists.
+
+        fail: Raise a ValueError.
+        replace: Drop the table before inserting new values.
+        append: Insert new values to the existing table.
+        """
+        try:
+            if 'if_exists' not in self.config or self.config['if_exists'] == 'fail':
+                raise ValueError("Table '%s' already exists" % self.config['table'])
+            elif self.config['if_exists'] == 'replace':
+                pass
+            elif self.config['if_exists'] == 'append':
+                pass
+            else:
+                raise ValueError("[%u] '%s' is not valid for if_exists" %
+                                 (os.getpid(), self.config['if_exists']))
+        except Exception:
+            self.logger.exception("[%u] Load data to DB failed" % os.getpid())
+            raise SystemExit(1)
+

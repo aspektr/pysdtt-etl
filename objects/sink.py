@@ -95,7 +95,7 @@ class Sink(SinkPrototype):
         try:
             insert_data(payload)
         # TODO bare except!!!
-        except:
+        except Exception:
             self.logger.exception("[%u] Load data to DB failed" % os.getpid())
-            raise SystemExit
+            raise SystemExit(1)
         self.logger.info("[%u] Task is done successfully" % os.getpid())

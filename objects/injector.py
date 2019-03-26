@@ -65,7 +65,7 @@ class Injector(SinkPrototype):
         self.logger.exception("Error type " % psycopg2.errorcodes.lookup(e.pgcode))
         self.connection.rollback()
         self.cursor.execute("""DEALLOCATE PREPARE insert_data""")
-        raise SystemExit
+        raise SystemExit(1)
 
     def _wrap_arrays_and_nulls(self, row):
         """

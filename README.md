@@ -1,7 +1,247 @@
-# pysdtt - simple data transfer tool
+# pysdtt - python simple data transfer tool
 
-is able to transfer data from any sources to postgresql
+Which is able to transfer data from any (almost) sources to postgresql.
+It may be useful while data warehousing :)
+## Current possibilities:
+* Load data from any sql source with pandas back-end. It may be useful for simple and fast getting data.
+`Not recommend` to use this mode in production pipeline.
+* Load data from `MSSQL`, `POSTGRESSQL` and `MONGODB` in `row-by-row` mode. This mode may be convenient while debugging.
+That's fairly slow so it's not suited for production environment.
+* Load data from `MSSQL`, `POSTGRESSQL` and `MONGODB` in `multi` mode. This is pretty fast mode, which use `MULTIPROCESSING` 
+and it consumes very few memory.
+* Logging data loading process with information about speed of loading
+* SQL (simple text) and MongoDB (yaml) query support
+* Automatic table creation
+* Automatic new column detection (config file) and its creation
+* Handling `JSON data`
+* Easy task start from a command prompt
+* Integration with `Apache Airflow` 
+* 3 options how to behave if the table already exists
 
+|Option| Behaviour |
+|--- |--- |
+|fail| Raise a ValueError
+|replace| Drop the table before inserting new values.
+|append| Insert new values to the existing table.
+
+
+## Introduction
+`The Extract-Transform-Load (ETL) system` is the foundation of the data warehouse.
+it consumes 80 percent of the resources needed for implementation and maintenance
+of typical data warehouse.
+
+`The mission of the data warehouse` is to publish the organization's data assets to most effectively support
+decision making. The key word in this mission statement is publish.
+
+`Data warehousing` is the process of taking data from legacy and transaction database systems and
+transforming it into organized information in a user-friendly format to encourage data analysis and 
+support fact-based business decision-making.
+
+`A data warehouse` is a system that extracts, cleans, conforms, and delivers source data into a 
+dimensional data store and then supports and implements querying and analysis for the purpose of 
+decision making.
+
+DWH is not:
+* a product
+* a language
+* a project
+* a data model
+* a copy of transaction system 
+
+
+
+### ETL system:
+* Removes mistakes and corrects missing data
+* Provides documented measures of confidence data
+* Captures the flow of transactional data for safekeeping
+* Adjusts data from multiple sources to be used together
+* Structures data to be usable by end-users tools
+
+### ETL threads
+* Planning & Design
+* Data Flow
+
+## **Planning & Design**
+
+![image](.README_img/PlanningDesign.png)
+
+#### Requirements and Realities:
+* Business needs
+* Data Profiling and other data-source realities
+* Compliance requirements
+* Security requirements
+* Data integration
+* Data latency
+* Archiving and lineage
+* End user delivery interfaces
+* Available development skills
+* Available management skills
+* Legacy licenses
+
+#### Architecture:
+* Hand-coded versus ETL vendor tool
+* Batch versus streaming data flow
+* Horizontal versus vertical task dependency
+* Sheduler automation
+* Exception handling
+* Quiality handling
+* Recovery and restart
+* Metadata
+* Security
+
+#### System Implementation:
+* Hardware
+* Software
+* Coding practices
+* Documentation practices
+* Specific quality check
+
+#### Test & Release:
+* Development system
+* Test systems
+* Production systems
+* Handoff procedures
+* Update propagation approach
+* System snapshoting and rollback procedures
+* Performance tuning
+
+
+## **Data Flow**
+
+![image](.README_img/DataFlow.png)
+
+#### Extract:
+* Reading source-data models
+* Connecting to and accessing data
+* Scheduling the source system, intercepting notifications and daemons
+* Capturing changed data
+* Staging the extracted data to disk
+
+#### Clean:
+* Enforcing column properties
+* Enforcing structure
+* Enforcing data and value rules
+* Enforcing complex business rules
+* Building a metadata foundation to describe data quality
+* Staging the cleaned data to DWH/disk
+
+#### Conform:
+* Conforming business labels (in dimensions)
+* Conforming business metrics and perfomance indicators (in fact tables)
+* Deduplicating
+* Householding
+* Internationalizing
+* Staging the conformed data to DWH/disk
+
+#### Data delivery:
+* Loading flat and snowflaked dimensions
+* Generating time dimensions
+* Loading degenerate dimension
+* Loading subdimensions
+* Loading types 1,2 and 3 slowly changing dimensions
+* Conforming dimensions and conforming facts
+* Handle late-arriving dimensions and late arriving facts
+* Loading multi-valued dimensions
+* Loading ragged hierarchy dimensions
+* Loading text fact in dimensions
+* Running the surrogate key pipeline for fact tables
+* Loading three fundamental fact table grains
+* Loading and updating aggregations
+* Staging the delivered data to DWH/disk
+
+#### Operations:
+* Scheduling
+* Job execution
+* Exception handling
+* Recovery and restart
+* Quality checking
+* Release
+* Support
+
+## The mission of the ETL team
+* Deliver data most effectively to end user tools
+* Add value to data in the cleaning and conforming steps
+* Protect and document the lineage of data
+
+## Designing the Staging Area
+* The data-staging area must be owned by the ETL team
+* Users are not allowed in the staging area for any reason
+* Report cannot access data from the staging area
+* Only ETL process can write to and read from the staging area
+
+#### Staging table volumetric worksheet (example)
+| Table Name| Update Strategy| Load Frequency| ETL Job(s)| Initial Rowcount| Avg Row Length| Grows with| Expected Monthly Rows |Expected Monthly Bytes| Initial Table Size Bytes| Table Size 6 mo.(MB)
+|:--- |--- |---|---|---|---|---|---|---|---|---
+|S_ACCOUNT| Replace| D |SAccount| 39633| 27| New accounts| 9983| 269548|1078191|2.57 
+|S_CUSTOMER| Append| D| SCustomer|38103|142|New customers| 9526|1352657|5410626|12.9
+|S_PRODUCT| Replace| On Demand| SProduct| 174641|73| New products| 43660|3187198|12748793|30.40
+
+* `Table name` - the name of the table or file in the staging area. There is one row in the worksheet for each staging table
+* `Update Strategy` - this field indicates how the table is maintained. If it is a persistent staging table , it will
+have data appended, updated, and perhaps deleted. Transient staging tables are truncated and reloaded with each process.
+* `Load Frequency` - reveals how often the table is loaded or changed by the ETL process. It can be weekly, monthly, or
+any interval of time. In a real-time environment, tables in the staging area can be updated continuously.
+* `ETL Job(s)` - staging tables are populated or updated via ETL jobs. The ETL job is the job or program that affects
+the staging table or file. When many jobs affect a single staging table, list all of the jobs in this section of the worksheet.
+* `Initial Row Count` - the ETL team must estimate how many rows each table in the staging area initially contains.
+The initial row count is usually based on the rows in the source and/or target tables
+* `Average Row Length` - for size estimation purposes, you must supply the DBA with the average row length in each staging table.
+* `Grows with` - even though tables are updated on a scheduled interval, they don't necessarily grow each time the are touched.
+The `Grows With` field is based on business rules. You must define when each table in the staging area grows.
+For example, a status table grows each time a new status is added. Even though the table is touched daily to look for
+changes , the addition of new status is quite rare.
+* `Expected Monthly Rows` - this esimate is based on history and business rules. Anticipated growth is required
+for the DBA to allocate approriate space to the table. The monthly row count is a building block to
+calculate how many bytes the table grows each month
+* `Expected Monthly Bytes` - expected `Monthly Bytes` is a calculation of Average Row Length times `Expected Monthly Rows` 
+* `Initial Table Size` - the initial table size is usually represented in bytes or megabytes. It is calculation of
+`Average Row Length` times `Initial Row Count`
+* `Table Size 6 Months` - an estimation of table  sizes after six months of activity helps DBA to estimate how the
+staging table grows. It is a calculation of
+(`Average Row Length` * `Initial Row Count`)  + (`Average Row Length` * `Expected Monthly Bytes` * 6)/1048576
+
+
+#### The logical Data Map
+* Have a plan
+* Identify data sources candidates
+* Analyze source systems with data-profiling tool
+* Receive walk-though of data lineage and business rules:
+  - required alterations to the data during the data-cleaning steps
+  - coercions to dimensional attributes and measured numerical facts to achieve standard conformance across separate data
+  sources
+* Receive walk-though of data warehouse data model
+* Validate calculations and formulas
+
+| Target Table Name| Target Column Name| Target Data Type| Target Table Type| SCD Type| Source MS/Database Name| Source Table Name| Source Column Name |Source Data Type| Transformation|
+|:--- |--- |---|---|---|---|---|---|---|---
+|EMPLOYEE_DIM| EMPLOYEE_KEY| NUMBER| Dimension| 1| | |  | | Surrogate key
+|EMPLOYEE_DIM| EMPLOYEE_ID| NUMBER| Dimension| 1| HR_SYS| EMPLOYEES| EMPLOYEE_ID | NUMBER| Natural key for employee in HR system
+|EMPLOYEE_DIM| BIRTH_DATE| DATE| Dimension| 1| HR_SYS| EMPLOYEES| BD | Date| Put sql here
+|EMPLOYEE_CONTRACT_FACT| EFFECTIVE_DATE_KEY| NUMBER| Fact| N/A| DW_PROD, HR_SYS| DATE_DIM, EMPLOYEE_CONTRACT| DATE_KEY| NUMBER| where employee_contract.date =dw_prod.date_dim.date
+|EMPLOYEE_CONTRACT_FACT| END_DATE_KEY| NUMBER| Fact| N/A| DW_PROD, HR_SYS| DATE_DIM, EMPLOYEE_CONTRACT| DATE_KEY| NUMBER| where employee_contract.end_date =dw_prod.date_dim.date
+|EMPLOYEE_CONTRACT_FACT| PROJECT_KEY| NUMBER| Fact| N/A| DW_PROD, HR_SYS| PROJECT_DIM, EMPLOYEE_CONTRACT| PROJECT_KEY| NUMBER| where employee_contract.project_code =dw_prod.project_dim.project_code
+|EMPLOYEE_CONTRACT_FACT| RATE_AMOUNT| NUMBER| Fact| N/A| DW_PROD, HR_SYS| PROJECT_DIM, EMPLOYEE_CONTRACT| AMOUNT| NUMBER| sum(amount)
+
+* `Target table name` - the physical name of the table as it appears in the data warehouse
+* `Target column name` - the name of the column in the data warehouse table
+* `Table type` - indicates if the table is a fact, dimension, or subdimension (outrigger)
+* `SCD (slowly changing dimension) type` - for dimensions, this component indicates a Type-1, -2 or -3 slowly 
+changed dimensions approach. This indicator can vary for each column in the dimension. For example, within the 
+customer dimension, the last name may require Type 2 behaviour (retain history), while the first name may require
+Type 1 (overwrite)
+* `Source MS/Database Name` - the name of the micro-service/instance of the database where the source data resides.
+It can be the connect string required to connect to the database. It can also be the name of a file as it appears
+in the file systems. In this case, the path of the file would also be included.
+* `Source table name` -  the name of the table where the source data originates. There will be many cases where more
+than one table is required. In those cases, simply list all tables required to populate the relative table in the target
+data warehouse
+* `Source column name` - the column or columns necessary to populate the target. Simply list all of the columns required
+to load the target column.
+* `Transformation` - the exact manipulation required of the source data so it corresponds to the expected format of the 
+target. This component is may be notated in SQL or pseudo-code
+
+#### Source system tracking report
+ 
 ## Usage
 * wright sql query and put it into query folder as .sql file
 * fill the `config/config.yaml` up for a source db in the source_name section

@@ -101,19 +101,27 @@ class SinkPrototype(Prototype):
 
         self.logger.debug("[%u] Run the following sql %s" %
                           (os.getpid(), ddl))
-        # we can't use
-        # self.cursor.execute(ddl) and
-        # self.connection.commit()
-        # because when back-end is pandas self.connection means sqlalchemy engine
-        # so we create another connection to postgresql
-        with get_sink_connection_string(self) as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(ddl)
+        self.execute_ddl(ddl)
 
         if self.table_exists():
             self.logger.info("[%u] Table's created successfully" % os.getpid())
         else:
             self.logger.info("[%u] Table hasn't created" % os.getpid())
+
+    def truncate_table(self):
+        self.logger.info("[%u] Table %s will be truncated..." %
+                         (os.getpid(), self.config['table']))
+        ddl = "TRUNCATE TABLE %s.%s;" % (self.config['schema'], self.config['table'])
+        self.logger.debug("[%u] Run the following sql %s" %
+                          (os.getpid(), ddl))
+        self.execute_ddl(ddl)
+
+        # TODO add message
+        # TODO create func table_num_rows
+        # if self.table_num_rows():
+        #    self.logger.info("[%u] Table's truncated successfully" % os.getpid())
+        # else:
+        #    self.logger.info("[%u] Table hasn't truncated" % os.getpid())
 
     def get_table_metadata(self):
         """
@@ -147,6 +155,7 @@ class SinkPrototype(Prototype):
             ALTER TABLE {schema}.{table}
             ADD COLUMN {col} {type}
         """
+        # TODO Replace by execute_ddl func and test it
         with get_sink_connection_string(self) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(ddl.format(schema=self.config['schema'],
@@ -169,7 +178,7 @@ class SinkPrototype(Prototype):
             if 'if_exists' not in self.config or self.config['if_exists'] == 'fail':
                 raise ValueError("Table '%s' already exists" % self.config['table'])
             elif self.config['if_exists'] == 'replace':
-                pass
+                self.truncate_table()
             elif self.config['if_exists'] == 'append':
                 pass
             else:
@@ -178,4 +187,16 @@ class SinkPrototype(Prototype):
         except Exception:
             self.logger.exception("[%u] Load data to DB failed" % os.getpid())
             raise SystemExit(1)
+
+    def execute_ddl(self, ddl):
+        """
+            we can't use
+        self.cursor.execute(ddl) and
+        self.connection.commit()
+        because when back-end is pandas self.connection means sqlalchemy engine
+        so we create another connection to postgresql
+        """
+        with get_sink_connection_string(self) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(ddl)
 

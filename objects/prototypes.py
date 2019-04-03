@@ -226,7 +226,7 @@ class SinkPrototype(Prototype):
         append: Insert new values to the existing table.
         """
         try:
-            if 'if_exists' not in self.config or self.config['if_exists'] == 'fail':
+            if self.config['if_exists'] == 'fail':
                 raise ValueError("Table '%s' already exists" % self.config['table'])
             elif self.config['if_exists'] == 'replace':
                 self.truncate_table()

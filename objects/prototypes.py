@@ -157,7 +157,7 @@ class SinkPrototype(Prototype):
                           (os.getpid(), new_column))
         ddl = """
             ALTER TABLE {schema}.{table}
-            ADD COLUMN {col} {type}
+            ADD COLUMN IF NOT EXISTS {col} {type}
         """
         # TODO Replace by execute_ddl func and test it
         with get_sink_connection_string(self) as conn:

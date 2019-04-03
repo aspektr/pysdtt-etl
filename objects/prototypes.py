@@ -153,7 +153,6 @@ class SinkPrototype(Prototype):
         
         """
         self.execute_ddl(ddl)
-
         if self.table_exists():
             self.logger.info("[%u] Table's created successfully" % os.getpid())
         else:

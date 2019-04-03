@@ -97,7 +97,7 @@ class SinkPrototype(Prototype):
         # (since we never DELETE or UPDATE the table).
         self.logger.info("[%u] Table %s doesn't exist. Creating..." %
                          (os.getpid(), self.config['table']))
-        ddl = "CREATE TABLE %s.%s (" % (self.config['schema'], self.config['table'])
+        ddl = "CREATE TABLE IF NOT EXISTS %s.%s (" % (self.config['schema'], self.config['table'])
         for field in self.config['dtypes']:
             ddl += field + " " + self.config['dtypes'][field] + " NULL, "
         ddl += ");"
@@ -105,6 +105,53 @@ class SinkPrototype(Prototype):
 
         self.logger.debug("[%u] Run the following sql %s" %
                           (os.getpid(), ddl))
+        # TODO fix problem when we create table concurrently
+        """
+        https://www.postgresql.org/message-id/CA+TgmoZAdYVtwBfp1FL2sMZbiHCWT4UPrzRLNnX1Nb30Ku3-gg@mail.gmail.com
+        
+        On Mon, Apr 23, 2012 at 7:49 AM, Matteo Beccati <php(at)beccati(dot)com> wrote:
+        > I've tried to come up with a self-contained test case but I haven't been
+        > able to replicate the error above. However the following script performs a
+        > few concurrent CREATE TABLE IF NOT EXISTS statements that produce some
+        > unexpected errors (using 9.1.2).
+        > ERROR:  duplicate key value violates unique constraint
+        > "pg_type_typname_nsp_index"
+
+
+
+        This is normal behavior for CREATE TABLE either with or without IF NOT
+        EXISTS.  CREATE TABLE does a preliminary check to see whether a name
+        conflict exists.  If so, it either errors out (normally) or exits with
+        a notice (in the IF NOT EXISTS case).  But there's a race condition: a
+        conflicting transaction can create the table after we make that check
+        and before we create it ourselves.  If this happens, then you get the
+        failure you're seeing, because the btree index machinery catches the
+        problem when we do the actual system catalog inserts.
+
+
+
+        Now, this is not very user-friendly, but we have no API to allow
+        inserting into a table with a "soft" error if uniqueness would be
+        violated.  Had we such an API we could handle a number of situations
+        more gracefully, including this one.  Since we don't, the only option
+        is to let the btree machinery error out if it must.
+
+
+
+        The bottom line is that CREATE TABLE IF NOT EXISTS doesn't pretend to
+        handle concurrency issues any better than regular old CREATE TABLE,
+        which is to say not very well.  You should use some other system to
+        coordinate near-simultaneous creation of tables, such as perhaps doing
+        pg_advisory_lock/CINE/pg_advisory_unlock.
+        
+        
+        
+        -- 
+        Robert Haas
+        EnterpriseDB: http://www.enterprisedb.com
+        The Enterprise PostgreSQL Company
+        
+        """
         self.execute_ddl(ddl)
 
         if self.table_exists():

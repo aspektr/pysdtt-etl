@@ -121,7 +121,7 @@ class Injector(SinkPrototype):
 
         self.logger.info("[%u] Ingestion is done successfully" % os.getpid())
 
-    def ingest_row(self, payload):
+    def ingest_row(self, q, payload):
 
         def get_cols_and_vals(object):
             dtypes = SortedDict(object.config['dtypes'])
@@ -193,6 +193,7 @@ class Injector(SinkPrototype):
             # TODO add command prompt parameter to run execute func
             # num_rows = execute(self, payload)
         except Exception as e:
+            q.put(1)
             self._error_handling(e)
 
         took = time.time() - start_time

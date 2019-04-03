@@ -5,13 +5,16 @@ from objects.injector import Injector
 import argparse
 from parallel_ingesting import run_in_parallel
 
-parser = argparse.ArgumentParser(description='<= Simple data transfer => ')
+parser = argparse.ArgumentParser(description='<= Simple data transfer tool => ')
 parser.add_argument('--version', action='version', version='%(ETL)s 0.1')
-parser.add_argument('--from', metavar='FROM', required=True, dest='from_source',
-                      help='source name from config file')
-parser.add_argument('--to', metavar='TO', required=True, dest='to_sink',
+parser.add_argument('--conf', metavar='CONFIG FILE', required=False, dest='path_to_config',
+                    help='path to config file')
+parser.add_argument('--from', metavar='SOURCE', required=True, dest='from_source',
+                    help='source name from config file')
+parser.add_argument('--to', metavar='SINK', required=True, dest='to_sink',
                     help='sink name from config file')
 parser.add_argument('--mode', metavar='MODE', required=True, dest='mode',
+                    choices=['all_data', 'row-by-row', 'multi'],
                     help='possible values are: all_data, row-by-row, multi')
 
 if __name__ == '__main__':

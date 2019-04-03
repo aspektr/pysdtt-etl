@@ -25,9 +25,13 @@ class Prototype:
         config_section_name = 'sink_name' if kind == 'sink' else 'source_name'
 
         # Read config
-        self.config = Config({config_section_name: self.name}).load()
+        if '--conf' in self.args:
+            self.config = Config({config_section_name: self.name}, self.args[2]).load()
+        else:
+            self.config = Config({config_section_name: self.name}).load()
+
         self.logger.debug("[%u] Config for %s = %s is loaded" %
-                         (os.getpid(), config_section_name, self.name))
+                          (os.getpid(), config_section_name, self.name))
         self.logger.debug("[%u] %s config is %s" %
                           (os.getpid(), self.name, self.config))
 

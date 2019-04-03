@@ -13,7 +13,7 @@ class Producer(SourcePrototype):
         # TODO bare except!!!
         except:
             self.logger.exception("Load data from DB failed")
-            raise SystemExit
+            raise SystemExit(1)
 
     def generate_row(self):
 

@@ -1,4 +1,3 @@
-
 from pandas import read_sql
 from objects.prototypes import SourcePrototype
 import os

@@ -155,14 +155,14 @@ class Injector(SinkPrototype):
 
             # TODO repeated piece of code is detected
             took_local = time.time() - start_local_time
-            object.logger.info("[%u] cursor execute %d rows in %f seconds, %f rows/sec" % (
+            object.logger.info("[%u] cursor executed %d rows in %f seconds, %f rows/sec" % (
                 os.getpid(), num_rows+1, took_local, num_rows/took_local))
 
             start_local_time = time.time()
             object.connection.commit()
             # TODO repeated piece of code is detected
             took_local = time.time() - start_local_time
-            object.logger.info("[%u] commit %d rows in %f seconds, %f rows/sec" % (
+            object.logger.info("[%u] commited %d rows in %f seconds, %f rows/sec" % (
                 os.getpid(), num_rows+1, took_local, num_rows/took_local))
             return num_rows
 

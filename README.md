@@ -2,7 +2,7 @@
 
 Which is able to transfer data from any (almost) sources to postgresql.
 It may be useful while data warehousing :)
-## Current possibilities:
+## Features:
 * Load data from any sql source with pandas back-end. It may be useful for simple and fast getting data.
 `Not recommend` to use this mode in production pipeline.
 * Load data from `MSSQL`, `POSTGRESSQL` and `MONGODB` in `row-by-row` mode. This mode may be convenient while debugging.
@@ -249,9 +249,276 @@ target. This component is may be notated in SQL or pseudo-code
 * run `python etl.py --from your_source_name --to your_sink_name --mode multi`
 * check `logs/info.log` and `logs/errors.log`
 
+## Use cases
+### From mssql to postgresql
+
+`Our goal` - to connect to microservice which we will call `QUIZ`. This microservice use `MS SQL` as RDBMS.
+The database has the table `qf_application`, which contains
+information about applications. We have to extract data from ms and ingest it into our staging layer. 
+
+#### the table structure
+|field | type
+|---|---
+|id| int
+|id_form| int
+|uuid| nvarchar(50)
+|status| nvarchar(50)
+|description| nvarchar(250)
+|extra| varchar(250)
+|created_at| datetime2(6)
+|updated_at| datetime2(6)
+|title| nvarchar(250)
+|weight| int
+|channel| nvarchar(50)
+|regno| nvarchar(50)
+|city| nvarchar(250)
+
+The field `extra` contains string representation of json.
+
+
+* Firstly prepare staging layer. We need to connect to postgresql using superuser role
+    
+    `psql -U postgres`
+* Create schema for raw data from ms `QUIZ`
+
+    `CREATE SCHEMA IF NOT EXISTS quiz;`
+* Check it
+
+    `\dn`
+    
+    ![image](.README_img/creating_schema.png)    
+* Create a table which will have information about accesses
+
+
+      CREATE TABLE quiz.quiz_access (
+      id serial NOT NULL,
+      "schema" varchar NOT NULL DEFAULT 'quiz'::character varying,
+      "table" varchar NOT NULL,
+      creator varchar NOT NULL,
+      created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "role" varchar NOT NULL,
+      role_psw varchar NOT NULL,
+      "sql" varchar NULL,
+      "comment" varchar NULL
+     );
+     
+* Check it
+
+     `\d quiz.quiz_access`
+     
+* Create role `etl_quiz_admin`
+
+     
+     CREATE ROLE etl_quiz_admin WITH LOGIN PASSWORD '2r3qs9AVDysM4zHU'
+     NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION VALID UNTIL 'infinity';
+     GRANT CONNECT ON DATABASE postgres TO etl_quiz_admin;
+     GRANT USAGE ON SCHEMA quiz TO etl_quiz_admin;
+     GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA quiz TO etl_quiz_admin;
+     GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA quiz TO etl_quiz_admin;
+     GRANT CREATE ON SCHEMA quiz TO etl_quiz_admin;
+
+* Check it
+
+    `\dg`
+    
+* Add a record
+
+    
+    insert into quiz.quiz_access(
+    "schema",
+    "table",
+    creator,
+    "role",
+    role_psw,
+    "sql")
+    values (
+    'quiz',
+    'all',
+    'mail@domen.com',
+    'etl_quiz_admin',
+    '2r3qs9AVDysM4zHU ',
+    'CREATE ROLE etl_quiz_admin WITH LOGIN PASSWORD ''2r3qs9AVDysM4zHU''
+    NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION VALID UNTIL ''infinity'';
+    GRANT CONNECT ON DATABASE postgres TO etl_quiz_admin;
+    GRANT USAGE ON SCHEMA quiz TO etl_quiz_admin;
+    GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA quiz TO etl_quiz_admin;
+    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA quiz TO etl_quiz_admin;
+    GRANT CREATE ON SCHEMA quiz TO etl_quiz_admin;'
+    );
+    
+* Check it
+
+    `select * from quiz.quiz_access;`
+   
+* Create a file `quiz.yaml` in the `configs` folder
+* Create a folder `quiz` in the folder `quiz`
+* Create a file `qf_application.sql` in the folder `quiz`
+* Add the lines to `qf_application.sql` and save your changes
+    
+    
+    select
+      id,
+      id_form,
+      uuid,
+      status,
+      description,
+      extra,
+      created_at,
+      updated_at,
+      title,
+      weight,
+      channel,
+      regno,
+      city
+    from
+      qf_application
+
+      
+* Add the lines to the file `configs/quiz.yaml`
+
+
+    source_name:
+      qf_application:
+        type: mssql+pymssql
+        host: yourSourceHostDB
+        port: yourSourcePortDB
+        dbname: yourSourceDBname
+        user: yourSourceUsername
+        psw: yourSourcePSW
+        file: query/quiz/qf_application.sql
+        cursor_size: 1000
+    sink_name:
+      st_application:
+        type: postgresql+psycopg2
+        host: yourSinkHostDB
+        port: yourSinkPortDB
+        dbname: yourSinkDBName
+        schema: quiz
+        user: etl_quiz_admin
+        psw: 2r3qs9AVDysM4zHU
+        table: st_application
+        if_exists: replace
+        method: multi
+        dtypes:
+          id: int
+          id_form: int
+          uuid: varchar(64)
+          status: varchar(64)
+          description: varchar(255)
+          extra: json
+          created_at : timestamp
+          updated_at: timestamp
+          title: varchar(255)
+          weight: int
+          channel: varchar(255)
+          regno: varchar(64)
+          city: varchar(255)
+
+
+* Create a file `st_application.cmd`  in `runnners` folder
+
+
+    echo "Start ETL process from ms quiz.qf_application to quiz.st_application in multi mode"
+    cd ..\..
+    C:\ProgramData\Anaconda3\python.exe etl.py --conf configs/quiz.yaml --from qf_application --to st_application --mode multi
+    
+* Run it
+
+![image](.README_img/run_task.png)  
+
+
+### Using extensions
+
+Creating a schema to contain all extensions
+    
+    create schema extensions;
+    
+    -- make sure everybody can use everything in the extensions schema
+    grant usage on schema extensions to public;
+    grant execute on all functions in schema extensions to public;
+    
+    -- include future extensions
+    alter default privileges in schema extensions
+       grant execute on functions to public;
+    
+    alter default privileges in schema extensions
+       grant usage on types to public;
+       
+Now install the extension:
+
+    create extension unaccent schema extensions;
+    
+### Sorting data in PostgreSQL
+
+The work_mem parameter is by default set to 4 MB
+
+    SHOW work_mem;
+    
+work_mem tells the server that up to 4 MB can be used per operation (per sort, grouping operation, etc.).
+If you sort too much data, PostgreSQL has to move the excessive amount of data to disk, 
+which is of course slow.  
+
+The easiest way to change work_mem on the fly is to use SET 
+
+    SET work_mem TO '1 GB';
+    
+If you want to speed up and tune sorting in PostgreSQL, there is no way of doing that without changing work_mem.
+The work_mem parameter is THE most important knob you have.
+The cool thing is that work_mem is not only used to speed up sorts 
+– it will also have a positive impact on aggregations and so on.
+
+As of PostgreSQL 10 there are 3 types of sort algorithms in PostgreSQL:
+* external sort Disk
+* quicksort
+* top-N heapsort
+
+“top-N heapsort” is used if you only want a couple of sorted rows. 
+For example: The highest 10 values, the lowest 10 values and so on.
+“top-N heapsort” is pretty efficient and returns the desired data in almost no time.
+
+work_mem is ideal to speed up sorts. However, in many cases it can make sense to avoid sorting in the first place.
+Indexes are a good way to provide the database engine with “sorted input”.
+In fact: A btree is somewhat similar to a sorted list.
+Building indexes (btrees) will also require some sorting.
+Many years ago PostgreSQL used work_mem to tell the CREATE INDEX command, 
+how much memory to use for index creation. This is not the case anymore: In modern versions of PostgreSQL 
+the maintenance_work_mem parameter will tell DDLs how much memory to use.
+Here is an example:
+
+    test=# \timing
+    Timing is on.
+    test=# CREATE INDEX idx_x ON t_test (x);
+    CREATE INDEX
+    Time: 4648.530 ms (00:04.649)
+    
+The default setting for maintenance_work_mem is 64 MB, but this can of course be changed:
+
+    test=# SET maintenance_work_mem TO '1 GB';
+    SET
+    Time: 0.469 ms
+    
+The index creation will be considerably faster with more memory:
+
+     test=# CREATE INDEX idx_x2 ON t_test (x);
+     CREATE INDEX
+     Time: 3083.661 ms (00:03.084)
+     
+In this case CREATE INDEX can use up to 1 GB of RAM to sort the data, which is of course a lot faster than going to disk.
+This is especially useful if you want to create large indexes.
+
+
+##### Sorting in PostgreSQL and tablespaces
+Many people out there are using tablespaces to scale I/O. By default PostgreSQL only uses a single tablespace,
+which can easily turn into a bottleneck. Tablespaces are a good way to provide PostgreSQL with more hardware.
+Let us assume you have to sort a lot of data repeatedly: The temp_tablespaces is a parameter, which allows
+administrators to control the location of temporary files sent to disk. Using a separate tablespace for temporary
+files can also help to speed up sorting.
+If you are not sure how to configure work_mem,
+consider checking out http://pgconfigurator.cybertec.at – it is an easy tool helping people to configure PostgreSQL.
+
 ## TODO
 * add csv support
-* add mongodb support
+* ~~add mongodb support~~
 *   It might be more convinient use in config the following schema defining the types:
 
         int4:
@@ -263,10 +530,10 @@ target. This component is may be notated in SQL or pseudo-code
             col2
             col3
 
-* handle bug in multi mode, add error message when cursor_size is not specified
+* ~~handle bug in multi mode, add error message when cursor_size is not specified~~
 
 
-## Introduction
+## Inside
 <ul>
 <li>Prototype - base class</li>
     <ul>
@@ -297,23 +564,22 @@ target. This component is may be notated in SQL or pseudo-code
 
 ### Config description
 
-source_name:
-  test_source2:
-    type: postgresql+psycopg2
-    host: 172.18.151.27
-    port: 5432
-    dbname: superset
-    schema: upload
-    user: superset
-    psw: DEkde3467XDer4G
-    file: query/test.sql
-    receive mode: batch
+    source_name:
+        test_source2:
+            type: postgresql+psycopg2
+            host: 172.18.151.27
+            port: 5432
+            dbname: postgres
+            schema: upload
+            user: superset
+            psw: password
+            file: query/file.sql
 
-source_name - section name, can't be changed
-test_source - source pseudonym, used in the command prompt
-type - type db, see also SQLAlchemy
-file - file containig query to db
-cursor_size - number of rows transmitted to insertion in one commitment (receive_mode = row_by_row or multiprocessing]
+* source_name - section name, can't be changed
+* test_source - source pseudonym, used in the command prompt
+* type - type db, see also SQLAlchemy
+* file - file containing query to db
+* cursor_size - number of rows transmitted to insertion in one commitment (mode = row_by_row or multiprocessing]
 
 
 ### Command prompt

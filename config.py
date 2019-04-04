@@ -30,7 +30,7 @@ class Config:
                         self.logger.exception("[%u] Parameter %s not specified" % (os.getpid(), mandatory_param))
                         raise SystemExit(1)
             except KeyError:
-                self.logger.exception("[%u] Can't find %s or %s",
+                self.logger.exception("[%u] Can't find %s section or %s in config file" %
                                       (os.getpid(), self.config_section, self.name))
 
         if self.config_section == 'source_name':

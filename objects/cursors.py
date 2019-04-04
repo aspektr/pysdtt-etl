@@ -10,6 +10,8 @@ def get_cursor(object):
         cursor = object.connection.cursor(name='result_to_dict', cursor_factory=psycopg2.extras.RealDictCursor)
         return cursor
     elif object.config['type'] == 'mongodb':
+        if 'filter' not in object.query:
+            object.query['filter'] = None
         cursor = object.connection.find(object.query['filter'], object.query['projection'])
         # gap-closure because mongo cursor hasn't execute method
         cursor.execute = lambda x: None

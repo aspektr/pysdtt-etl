@@ -89,6 +89,7 @@ class Injector(SinkPrototype):
                 self.logger.debug("jsonb before json.dumps: %s" % row[column_name])
                 row[column_name] = json.dumps(row[column_name], default=json_util.default)
                 self.logger.debug("jsonb after json.dumps: %s" % row[column_name])
+            # TODO add json type support
         return SortedDict(row)
 
     def ingest_from(self, producer):

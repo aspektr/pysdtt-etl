@@ -1,0 +1,244 @@
+#=============================================
+source_name:
+#=============================================
+  qf_application:
+#---------------------------------------------
+    type: mssql+pymssql
+    host: localhost
+    port: 1435
+    dbname: db
+    user: username
+    psw: password
+    file: query/quiz/qf_application.sql
+    cursor_size: 1000
+#---------------------------------------------
+  qf_status:
+#---------------------------------------------
+    type: mssql+pymssql
+    host: localhost
+    port: 1435
+    dbname: db
+    user: username
+    psw: password
+    file: query/quiz/qf_status.sql
+    cursor_size: 1000
+#---------------------------------------------
+  qf_form:
+#---------------------------------------------
+    type: mssql+pymssql
+    host: localhost
+    port: 1435
+    dbname: db
+    user: username
+    psw: password
+    file: query/quiz/qf_form.sql
+    cursor_size: 1000
+#---------------------------------------------
+  qf_line:
+#---------------------------------------------
+    type: mssql+pymssql
+    host: localhost
+    port: 1435
+    dbname: db
+    user: username
+    psw: password
+    file: query/quiz/qf_line.sql
+    cursor_size: 100000
+
+#---------------------------------------------
+  wp_note:
+#---------------------------------------------
+    type: mssql+pymssql
+    host: localhost
+    port: 1435
+    dbname: db
+    user: username
+    psw: password
+    file: query/quiz/wp_note.sql
+    cursor_size: 10000
+
+#---------------------------------------------
+  wp_employee:
+#---------------------------------------------
+    type: mssql+pymssql
+    host: localhost
+    port: 1435
+    dbname: db
+    user: username
+    psw: password
+    file: query/quiz/wp_employee.sql
+    cursor_size: 10000
+
+#---------------------------------------------
+  wp_assign:
+#---------------------------------------------
+    type: mssql+pymssql
+    host: localhost
+    port: 1435
+    dbname: db
+    user: username
+    psw: password
+    file: query/quiz/wp_assign.sql
+    cursor_size: 10000
+
+#=============================================
+sink_name:
+#=============================================
+  st_application:
+#---------------------------------------------
+    type: postgresql+psycopg2
+    host: ip_adress
+    port: 5432
+    dbname: postgres
+    schema: quiz
+    user: etl_quiz_admin
+    psw: 2r3qs9AVDysM4zHU
+    table: st_application
+    if_exists: replace
+    method: multi
+    dtypes:
+      id: int
+      id_form: int
+      uuid: varchar(64)
+      status: varchar(64)
+      description: varchar(256)
+      extra: json
+      created_at : timestamp
+      updated_at: timestamp
+      title: varchar(256)
+      weight: int
+      channel: varchar(256)
+      regno: varchar(64)
+      city: varchar(256)
+#---------------------------------------------
+  st_status:
+#---------------------------------------------
+    type: postgresql+psycopg2
+    host: ip_adress
+    port: 5432
+    dbname: postgres
+    schema: quiz
+    user: etl_quiz_admin
+    psw: 2r3qs9AVDysM4zHU
+    table: st_status
+    if_exists: replace
+    method: multi
+    dtypes:
+      id: int
+      id_application: int
+      time: timestamp
+      name: varchar(64)
+      reason: varchar(64)
+      description: varchar(256)
+#---------------------------------------------
+  st_form:
+#---------------------------------------------
+    type: postgresql+psycopg2
+    host: ip_adress
+    port: 5432
+    dbname: postgres
+    schema: quiz
+    user: etl_quiz_admin
+    psw: 2r3qs9AVDysM4zHU
+    table: st_form
+    if_exists: replace
+    method: multi
+    dtypes:
+      id: int
+      phone: varchar(64)
+      regno: varchar(64)
+      status: varchar(64)
+      created_at: timestamp
+      updated_at: timestamp
+      deleted_at: timestamp
+#---------------------------------------------
+  st_line:
+#---------------------------------------------
+    type: postgresql+psycopg2
+    host: ip_adress
+    port: 5432
+    dbname: postgres
+    schema: quiz
+    user: etl_quiz_admin
+    psw: 2r3qs9AVDysM4zHU
+    table: st_line
+    if_exists: replace
+    method: multi
+    dtypes:
+      id: int
+      id_form: int
+      name: varchar(256)
+      value: text
+      source: varchar(256)
+      created_at: timestamp
+      updated_at: timestamp
+
+#---------------------------------------------
+  st_note:
+#---------------------------------------------
+    type: postgresql+psycopg2
+    host: ip_adress
+    port: 5432
+    dbname: postgres
+    schema: quiz
+    user: etl_quiz_admin
+    psw: 2r3qs9AVDysM4zHU
+    table: st_note
+    if_exists: replace
+    method: multi
+    dtypes:
+      id: int
+      id_application: int
+      uuid: text
+      text: text
+      extra: text
+      created_at: timestamp
+      updated_at: timestamp
+      deleted_at: timestamp
+      id_employee: int
+
+#---------------------------------------------
+  st_employee:
+#---------------------------------------------
+    type: postgresql+psycopg2
+    host: ip_adress
+    port: 5432
+    dbname: postgres
+    schema: quiz
+    user: etl_quiz_admin
+    psw: 2r3qs9AVDysM4zHU
+    table: st_employee
+    if_exists: replace
+    method: multi
+    dtypes:
+      id: int
+      uuid: text
+      login: varchar(255)
+      name: varchar(255)
+      roles: text
+      created_at: timestamp
+      updated_at: timestamp
+      deleted_at: timestamp
+
+
+#---------------------------------------------
+  st_assign:
+#---------------------------------------------
+    type: postgresql+psycopg2
+    host: ip_adress
+    port: 5432
+    dbname: postgres
+    schema: quiz
+    user: etl_quiz_admin
+    psw: 2r3qs9AVDysM4zHU
+    table: st_assign
+    if_exists: replace
+    method: multi
+    dtypes:
+      id: int
+      id_employee: int
+      id_application: int
+      created_at: timestamp
+      updated_at: timestamp
+      deleted_at: timestamp
+      id_author: int

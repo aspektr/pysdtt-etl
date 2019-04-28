@@ -1,0 +1,102 @@
+#=============================================
+source_name:
+#=============================================
+  ms_company:
+#---------------------------------------------
+    type: mongodb
+    host: localhost
+    port: 17017
+    dbname: companydb
+    collection: company
+    user: user
+    psw: password
+    file: query/company/company.yaml
+    cursor_size: 1000
+
+
+#---------------------------------------------
+  person:
+#---------------------------------------------
+    type: mongodb
+    host: localhost
+    port: 17017
+    dbname: companydb
+    collection: person
+    user: user
+    psw: password
+    file: query/company/person.yaml
+    cursor_size: 1000
+
+#=============================================
+sink_name:
+#=============================================
+  st_company:
+#---------------------------------------------
+    type: postgresql+psycopg2
+    host: ip_adress
+    port: 5432
+    dbname: postgres
+    schema: company
+    user: etl_company_admin
+    psw: password
+    table: st_company
+    if_exists: replace
+    method: multi
+    dtypes:
+      _id: varchar(64)
+      modifiedAt: timestamp
+      masterSource: varchar(64)
+      ogrn: varchar(64)
+      ibsoId: varchar(32)
+      fullName: text
+      shortName: text
+      okopfName: text
+      okopfCode: varchar(32)
+      taxInspectionCode: varchar(32)
+      taxInspectionName: text
+      taxpayerNumber: text
+      regDate: timestamp
+      regReasonCode: varchar(16)
+      okato: varchar(32)
+      oktmo: varchar(32)
+      salarySetting: jsonb
+      edo: jsonb
+      taxSystems: jsonb[]
+      activityClassifiers: jsonb[]
+      contacts: jsonb[]
+      addresses: jsonb[]
+      _class: varchar(128)
+
+#---------------------------------------------
+  st_person:
+#---------------------------------------------
+    type: postgresql+psycopg2
+    host: ip_adress
+    port: 5432
+    dbname: postgres
+    schema: company
+    user: etl_company_admin
+    psw: password
+    table: st_person
+    if_exists: replace
+    method: multi
+    dtypes:
+      _id: varchar(64)
+      modifiedAt: timestamp
+      masterSource: varchar(64)
+      evaId: varchar(64)
+      ibsoId: varchar(64)
+      lastName: text
+      firstName: text
+      middleName: text
+      birthDate: timestamp
+      birthPlace: text
+      gender: varchar(4)
+      taxpayerNumber: varchar(64)
+      insuranceNumber: varchar(64)
+      identityDoc: jsonb
+      residenceInfo: jsonb
+      addresses: jsonb[]
+      contacts: jsonb[]
+      representProfiles: jsonb[]
+

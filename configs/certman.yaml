@@ -1,0 +1,49 @@
+#=============================================
+source_name:
+#=============================================
+  ms_certman:
+#---------------------------------------------
+    type: mongodb
+    host: localhost
+    port: 17017
+    dbname: certmandb
+    collection: certificate
+    user: user
+    psw: password
+    file: query/certman/certificate.yaml
+    cursor_size: 1000
+
+#=============================================
+sink_name:
+#=============================================
+  st_certificate:
+#---------------------------------------------
+    type: postgresql+psycopg2
+    host: ip_adress
+    port: 5432
+    dbname: postgres
+    schema: certman
+    user: etl_certman_admin
+    psw: password
+    table: st_certificate
+    if_exists: replace
+    method: multi
+    dtypes:
+      _id: varchar(64)
+      modifiedAt: timestamp
+      ogrn: varchar(64)
+      orgName: text
+      kpp: varchar(64)
+      inn: varchar(64)
+      phone: varchar(64)
+      snils: varchar(64)
+      fio: text
+      status: varchar(64)
+      formId: varchar(64)
+      serialNumber: varchar(64)
+      thumbprint: varchar(64)
+      validFrom: timestamp
+      validTo: timestamp
+      rcId: varchar(64)
+      templateId: varchar(64)
+      extendedState: int

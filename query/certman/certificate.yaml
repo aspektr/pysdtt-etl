@@ -1,0 +1,19 @@
+projection:
+  _id: 1
+  modifiedAt: 1
+  ogrn: 1
+  orgName: 1
+  kpp: 1
+  inn: 1
+  phone: 1
+  snils: 1
+  fio: 1
+  status: 1
+  formId: 1
+  serialNumber: 1
+  thumbprint: 1
+  validFrom: 1
+  validTo: 1
+  rcId: 1
+  templateId: 1
+  extendedState: 1

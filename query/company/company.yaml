@@ -8,11 +8,20 @@ projection:
   ogrn: 1
   ibsoId: 1
   fullName: 1
+  shortName: 1
   okopfName: 1
   okopfCode: 1
   taxInspectionCode: 1
   taxInspectionName: 1
   taxpayerNumber: 1
   regDate: 1
+  regReasonCode: 1
   okato: 1
   oktmo: 1
+  salarySetting: 1
+  edo: 1
+  taxSystems: 1
+  activityClassifiers: 1
+  contacts: 1
+  addresses: 1
+  _class: 1

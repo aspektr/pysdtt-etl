@@ -1,0 +1,19 @@
+projection:
+  _id: 1
+  modifiedAt: 1
+  masterSource: 1
+  evaId: 1
+  ibsoId: 1
+  lastName: 1
+  firstName: 1
+  middleName: 1
+  birthDate: 1
+  birthPlace: 1
+  gender: 1
+  taxpayerNumber: 1
+  insuranceNumber: 1
+  identityDoc: 1
+  residenceInfo: 1
+  addresses: 1
+  contacts: 1
+  representProfiles: 1

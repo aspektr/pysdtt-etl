@@ -62,6 +62,8 @@ class SinkPrototype(Prototype):
         Prototype.__init__(self, sink_name, kind='sink')
         self.cursor = get_sink_connection_string(self).cursor()
 
+        # TODO add something like that cur.execute("SET TIME ZONE 'Europe/Rome';") where timezone is param
+
         if not self.table_exists():
             self.create_table()
         # pandas already has handler for if_exists param, thus we need implement it only for another modes

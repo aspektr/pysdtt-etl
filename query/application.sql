@@ -1,0 +1,1 @@
+select * from qf_application;

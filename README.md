@@ -300,7 +300,7 @@ The field `extra` contains string representation of json.
       role_psw varchar NOT NULL,
       "sql" varchar NULL,
       "comment" varchar NULL
-     );
+        );
      
 * Check it
 
@@ -309,13 +309,13 @@ The field `extra` contains string representation of json.
 * Create role `etl_quiz_admin`
 
      
-     CREATE ROLE etl_quiz_admin WITH LOGIN PASSWORD '2r3qs9AVDysM4zHU'
-     NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION VALID UNTIL 'infinity';
-     GRANT CONNECT ON DATABASE postgres TO etl_quiz_admin;
-     GRANT USAGE ON SCHEMA quiz TO etl_quiz_admin;
-     GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA quiz TO etl_quiz_admin;
-     GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA quiz TO etl_quiz_admin;
-     GRANT CREATE ON SCHEMA quiz TO etl_quiz_admin;
+         CREATE ROLE etl_quiz_admin WITH LOGIN PASSWORD '2r3qs9AVDysM4zHU'
+         NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION VALID UNTIL 'infinity';
+         GRANT CONNECT ON DATABASE postgres TO etl_quiz_admin;
+         GRANT USAGE ON SCHEMA quiz TO etl_quiz_admin;
+         GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA quiz TO etl_quiz_admin;
+         GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA quiz TO etl_quiz_admin;
+         GRANT CREATE ON SCHEMA quiz TO etl_quiz_admin;
 
 * Check it
 
@@ -324,103 +324,104 @@ The field `extra` contains string representation of json.
 * Add a record
 
     
-    insert into quiz.quiz_access(
-    "schema",
-    "table",
-    creator,
-    "role",
-    role_psw,
-    "sql")
-    values (
-    'quiz',
-    'all',
-    'mail@domen.com',
-    'etl_quiz_admin',
-    '2r3qs9AVDysM4zHU ',
-    'CREATE ROLE etl_quiz_admin WITH LOGIN PASSWORD ''2r3qs9AVDysM4zHU''
-    NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION VALID UNTIL ''infinity'';
-    GRANT CONNECT ON DATABASE postgres TO etl_quiz_admin;
-    GRANT USAGE ON SCHEMA quiz TO etl_quiz_admin;
-    GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA quiz TO etl_quiz_admin;
-    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA quiz TO etl_quiz_admin;
-    GRANT CREATE ON SCHEMA quiz TO etl_quiz_admin;'
-    );
+        insert into quiz.quiz_access(
+        "schema",
+        "table",
+        creator,
+        "role",
+        role_psw,
+        "sql")
+        values (
+        'quiz',
+        'all',
+        'mail@domen.com',
+        'etl_quiz_admin',
+        '2r3qs9AVDysM4zHU ',
+        'CREATE ROLE etl_quiz_admin WITH LOGIN PASSWORD ''2r3qs9AVDysM4zHU''
+        NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION VALID UNTIL ''infinity'';
+        GRANT CONNECT ON DATABASE postgres TO etl_quiz_admin;
+        GRANT USAGE ON SCHEMA quiz TO etl_quiz_admin;
+        GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA quiz TO etl_quiz_admin;
+        GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA quiz TO etl_quiz_admin;
+        GRANT CREATE ON SCHEMA quiz TO etl_quiz_admin;'
+        );
     
 * Check it
 
     `select * from quiz.quiz_access;`
    
 * Create a file `quiz.yaml` in the `configs` folder
-* Create a folder `quiz` in the folder `quiz`
+* Create a folder `quiz` in the folder `query`
 * Create a file `qf_application.sql` in the folder `quiz`
 * Add the lines to `qf_application.sql` and save your changes
     
     
-    select
-      id,
-      id_form,
-      uuid,
-      status,
-      description,
-      extra,
-      created_at,
-      updated_at,
-      title,
-      weight,
-      channel,
-      regno,
-      city
-    from
-      qf_application
+        select
+            id,
+            id_form,
+            uuid,
+            status,
+            description,
+            extra,
+            created_at,
+            updated_at,
+            title,
+            weight,
+            channel,
+            regno,
+            city
+        from
+            qf_application
 
       
 * Add the lines to the file `configs/quiz.yaml`
 
 
-    source_name:
-      qf_application:
-        type: mssql+pymssql
-        host: yourSourceHostDB
-        port: yourSourcePortDB
-        dbname: yourSourceDBname
-        user: yourSourceUsername
-        psw: yourSourcePSW
-        file: query/quiz/qf_application.sql
-        cursor_size: 1000
-    sink_name:
-      st_application:
-        type: postgresql+psycopg2
-        host: yourSinkHostDB
-        port: yourSinkPortDB
-        dbname: yourSinkDBName
-        schema: quiz
-        user: etl_quiz_admin
-        psw: 2r3qs9AVDysM4zHU
-        table: st_application
-        if_exists: replace
-        method: multi
-        dtypes:
-          id: int
-          id_form: int
-          uuid: varchar(64)
-          status: varchar(64)
-          description: varchar(255)
-          extra: json
-          created_at : timestamp
-          updated_at: timestamp
-          title: varchar(255)
-          weight: int
-          channel: varchar(255)
-          regno: varchar(64)
-          city: varchar(255)
+        source_name:
+          qf_application:
+            type: mssql+pymssql
+            host: yourSourceHostDB
+            port: yourSourcePortDB
+            dbname: yourSourceDBname
+            user: yourSourceUsername
+            psw: yourSourcePSW
+            file: query/quiz/qf_application.sql
+            cursor_size: 1000
+        sink_name:
+            st_application:
+            type: postgresql+psycopg2
+            host: yourSinkHostDB
+            port: yourSinkPortDB
+            dbname: yourSinkDBName
+            schema: quiz
+            user: etl_quiz_admin
+            psw: 2r3qs9AVDysM4zHU
+            table: st_application
+            if_exists: replace
+            method: multi
+            dtypes:
+                id: int
+                id_form: int
+                uuid: varchar(64)
+                status: varchar(64)
+                description: varchar(255)
+                extra: json
+                created_at : timestamp
+                updated_at: timestamp
+                title: varchar(255)
+                weight: int
+                channel: varchar(255)
+                regno: varchar(64)
+                city: varchar(255)
+          
 
 
 * Create a file `st_application.cmd`  in `runnners` folder
 
 
-    echo "Start ETL process from ms quiz.qf_application to quiz.st_application in multi mode"
-    cd ..\..
-    C:\ProgramData\Anaconda3\python.exe etl.py --conf configs/quiz.yaml --from qf_application --to st_application --mode multi
+        echo "Start ETL process from ms quiz.qf_application to quiz.st_application in multi mode"
+        cd ..\..
+        C:\ProgramData\Anaconda3\python.exe etl.py --conf configs/quiz.yaml --from qf_application --to st_application --mode multi
     
 * Run it
 
